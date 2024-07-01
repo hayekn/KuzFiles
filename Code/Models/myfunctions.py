@@ -1,7 +1,7 @@
 import numpy as np
 from params import *
 import matplotlib.pyplot as plt
-from pythonizedModel import *
+#from pythonizedModel import *
 from scipy.integrate import odeint
 from scipy.integrate import solve_ivp
 tfont = {'fontname':'Times New Roman'}
