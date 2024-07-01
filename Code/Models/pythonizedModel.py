@@ -3,8 +3,8 @@ from params import *
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
 from scipy.integrate import solve_ivp
-from SALib.analyze import fast, sobol
-from SALib.sample import fast_sampler, saltelli
+# from SALib.analyze import fast, sobol
+# from SALib.sample import fast_sampler, saltelli
 
 def F(x):
         return 1 / (1 + np.exp(x))
