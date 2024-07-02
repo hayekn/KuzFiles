@@ -202,7 +202,7 @@ def loadData(names, graph, confidence, file, range=1):
 
 
 def chooseBest(n, graph, lookFor):
-    with open("bigDATAv2.npy", "rb") as f:
+    with open("Sensitivity/bigDATAv2.npy", "rb") as f:
         A = np.load(f)
     result = {}
     for name in keys:
@@ -245,6 +245,6 @@ STR_INP = ['vtaTOnac','vtaTOdls', 'binTOnac','binTOdls','seekTOnac']
 
 
 
-chooseBest(35, "S1", "TO")
+chooseBest(35, "ST", "DRIVE")
 #loadData(["binTOstop", "stopTObin", "seekTObin", "Ebinge", "Estop"], "ST", True, "insula", .3)
 #loadData(PFC, "S1", True, "Sensitivity/total/pfc", .35)

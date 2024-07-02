@@ -59,20 +59,60 @@ def insulaBif(binExc = Ebinge, stopExc = Estop):
     A = []
     R = np.linspace(0, 1, 100)
     null = insulaNull(R, binExc, stopExc)
-    for i, b in enumerate(null[0]):
-        for j, s in enumerate(null[1]):
-            if abs(i-s) < .01 and abs(j-b) < .01:
-                A.append(b)
+    binge = null[0]
+    stop = null[1]
+    for i in binge:
+         for j in stop:
+              if abs(i[0]-j[1])<.007 and abs(i[1]-j[0])<.007:
+                   A.append(j)
+    
     if len(A)==0:
-        return [1.1, 1.1, 1.1]
-    return [A[0], A[len(A)//2], A[-1]]
+        return [0, 0, 0]
+    A = [A[0], A[len(A)//2], A[-1]]
+    print(A)
+    return A
 
-fig, ax = plt.subplots(figsize=(12, 5))
-E = np.linspace(0, 10, 100)
+from scipy.optimize import fsolve
+def system(inputs, binExc, stopExc):
+    return [inputs[0] - F(binExc * (stopTObin * inputs[1]  - bingeDRIVE)) / bingeTAU,
+    inputs[1] - F(stopExc * (binTOstop * inputs[0]  - stopDRIVE)) / stopTAU]
+def equiFinder(i, j, binExc=Ebinge, stopExc=Estop):
+    return fsolve(system, [i, j], args=(binExc, stopExc))
+
+
+
+
+
+
+def bingeBif():
+    fig, ax = plt.subplots(figsize=(5, 5))
+    E = np.linspace(0, 10, 100)
+    n=35
+    for i in np.linspace(0, 1, n): 
+        for j in np.linspace(0, 1, n):
+            ax.scatter(E, [equiFinder(i, j, binExc=e)[0] for e in E], c='black', s=.1)
+    plt.xlabel("Binge Excitability")
+    plt.ylabel("Equilibrium Value")
+    plt.savefig("bingeBif", dpi=350)
+
+def stopBif():
+    fig, ax = plt.subplots(figsize=(5, 5))
+    E = np.linspace(0, 10, 100)
+    n=10
+    for i in np.linspace(0, 1, n): 
+        for j in np.linspace(0, 1, n):
+            ax.scatter(E, [equiFinder(i, j, stopExc=e)[1] for e in E], c='black', s=.1)
+    plt.xlabel("Stop Excitability")
+    plt.ylabel("Equilibrium Value")
+    plt.savefig("stopBif", dpi=350)
+
+
+stopBif()
+bingeBif()
+
 R = np.linspace(0, 1, 100)
 #print([insulaBif(binExc=e) for e in E])
-ax.plot(E, [insulaBif(binExc=e) for e in E])
-'''P = {'binExc':5, 'stopExc':10.5}
-ax.plot(insulaNull(R, **P)[0][0], insulaNull(R, **P)[0][1])
-ax.plot(insulaNull(R, **P)[1][0], insulaNull(R, **P)[1][1])'''
-plt.show()
+#[insulaBif(binExc=e) for e in np.linspace(0, 10, 100)]
+P = {'binExc':2, 'stopExc':Estop}
+ax.plot(insulaNull(R, **P)[0], R)
+ax.plot(R, insulaNull(R, **P)[1])
