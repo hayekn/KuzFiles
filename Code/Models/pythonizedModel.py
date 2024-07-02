@@ -6,7 +6,7 @@ from scipy.integrate import solve_ivp
 
 
 
-def derModel(t, y0):
+def derModel(t, y):
     seek, binge, stop, nac, dls, ALCOHOL = y
 
     setp = 1 - F(Esetp * (ALCOHOL - TOLERANCE))
@@ -136,4 +136,3 @@ ax.plot(insulaNull(R, **P)[0], R)
 ax.plot(R, insulaNull(R, **P)[1])'''
 
 
-print(xppaut_model(np.linspace(0, 20, 100), [0, 0, 0, 0, 0, 0])['Der'])

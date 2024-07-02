@@ -35,8 +35,8 @@ vtaTOdls = 1
 apsTOseek = 1
 
 #EXTRAS
-dlsWeight = 1
-TOLERANCE = 10
+dlsWeight = 0.5
+TOLERANCE = 5
 daFACTOR = 0.1
 
 
