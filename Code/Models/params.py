@@ -1,8 +1,12 @@
+#INIT
+[0, 0.2, 0.2, 0.3, 0, 0]
+
+#EXCITABILITIES
 Ebinge = 10.5
 Estop = 10.5
 Enac = 1.84
 Eaps = 1
-Edls = 1.84
+Edls = 1
 Eseek=1
 Esetp = 6
 Evta = 12
@@ -19,7 +23,7 @@ seekDRIVE = 0.01
 bingeDRIVE = 0.5
 stopDRIVE = 0.5
 nacDRIVE = -1.4
-dlsDRIVE = -1.4
+dlsDRIVE = -.8
 
 #SYNAPTIC WEIGHTS
 spTOseek = 5
@@ -35,9 +39,17 @@ vtaTOdls = 1
 apsTOseek = 1
 
 #EXTRAS
-dlsWeight = .5
-TOLERANCE = 10
+dlsWeight = .3
+TOLERANCE = 5
 daFACTOR = 0.1
+
+
+
+
+
+
+
+
 
 
 def paramDict():
