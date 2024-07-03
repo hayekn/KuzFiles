@@ -172,6 +172,7 @@ def stopBif(limit, reso, save=False):
             ax.scatter(E, [equiFinder(i, j, stopExc=e)[1] for e in E], c='black', s=.1)
     plt.xlabel("Stop Excitability")
     plt.ylabel("Equilibrium Value")
+        
     if save:
         plt.savefig("saveBif", dpi=350)
     else:
@@ -229,7 +230,7 @@ def bothBif(limit, reso, setBin, setStop, save=False):
     else:
         plt.show()
 
-def binWeightAnim(n, save=False):
+def dlsWeightAnim(n, save=False):
     fig, ax = plt.subplots(figsize=(12, 5))
     t = np.linspace(0, n, 1000)
     y = xppaut_model(t, y0, vtaTOdls=0, vtaTOnac=0)
