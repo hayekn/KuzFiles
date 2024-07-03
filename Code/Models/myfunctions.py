@@ -1,5 +1,5 @@
 import numpy as np
-from params
+from paramsAR import *
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
 from scipy.integrate import solve_ivp
@@ -73,7 +73,7 @@ def sub_plots(t,y0):
     axs[0,0].plot(t, setp, label = 'Setpoint', color = 'royalblue')
     axs[0,0].set_title('mPFC Activity', **tfont, fontweight = 'bold', fontsize='14')
     axs[0,0].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
-    axs[0,0].set_xlabel('Time (s)',**tfont, fontsize='12')
+    axs[0,0].set_xlabel('Time (min)',**tfont, fontsize='12')
     axs[0,0].legend()
 
     axs[0,1].axvline(x=thresh, color = 'silver',linestyle='dashed')
@@ -81,7 +81,7 @@ def sub_plots(t,y0):
     axs[0,1].plot(t, stop, label = 'Stop', color = 'darkgreen')
     axs[0,1].set_title('Insular Activity',**tfont, fontweight = 'bold', fontsize='14')
     axs[0,1].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
-    axs[0,1].set_xlabel('t (s)',**tfont, fontsize='12')
+    axs[0,1].set_xlabel('Time (min)',**tfont, fontsize='12')
     axs[0,1].legend()
 
     axs[1,0].axvline(x=thresh, color = 'silver',linestyle='dashed')
@@ -90,14 +90,14 @@ def sub_plots(t,y0):
     axs[1,0].plot(t,dls, label = 'DLS', color = 'crimson')
     axs[1,0].set_title('Subcortical Nuclei Activity',**tfont, fontweight = 'bold', fontsize='14')
     axs[1,0].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
-    axs[1,0].set_xlabel('t (s)',**tfont, fontsize='12')
+    axs[1,0].set_xlabel('Time (min)',**tfont, fontsize='12')
     axs[1,0].legend()
 
     axs[1,1].axvline(x=thresh, color = 'silver',linestyle='dashed')
     axs[1,1].plot(t, alc, color = 'red')
     axs[1,1].set_title('Alcohol Consumed',**tfont, fontweight = 'bold', fontsize='14')
     axs[1,1].set_ylabel('Volume (mL)',**tfont, fontsize='12')
-    axs[1,1].set_xlabel('t (s)',**tfont, fontsize='12')
+    axs[1,1].set_xlabel('Time (min)',**tfont, fontsize='12')
     plt.subplots_adjust(wspace=0.2, hspace=0.3)
     plt.show()
 
@@ -124,7 +124,7 @@ def comb_plots(t,y0):
     plt.plot(t, vta, label = 'DA', color = 'lightcoral', linewidth='1.2')
     plt.plot(t,nac, label = 'NAc', color = 'maroon', linewidth='1.2')
     plt.plot(t,dls, label = 'DLS', color = 'crimson', linewidth='1.2')
-    plt.xlabel('t (s)',**tfont, fontsize='15',fontweight = 'bold')
+    plt.xlabel('Time (min)',**tfont, fontsize='15',fontweight = 'bold')
     plt.ylabel('Firing Rate (Hz)',**tfont, fontsize='15',fontweight = 'bold')
     plt.legend()
     plt.title('Simplified Model of Front-Loading',**tfont, fontweight = 'bold', fontsize='20')
@@ -152,7 +152,7 @@ def ind_plots(t,y0):
     plt.plot(t, setp, label = 'Setpoint', color = 'royalblue')
     plt.title('mPFC Activity', **tfont, fontweight = 'bold', fontsize='14')
     plt.ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
-    plt.xlabel('t (s)',**tfont, fontsize='12')
+    plt.xlabel('Time (min)',**tfont, fontsize='12')
     plt.legend()
     plt.show()
 
@@ -161,7 +161,7 @@ def ind_plots(t,y0):
     plt.plot(t, stop, label = 'Stop', color = 'darkgreen')
     plt.title('Insular Activity',**tfont, fontweight = 'bold', fontsize='14')
     plt.ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
-    plt.xlabel('t (s)',**tfont, fontsize='12')
+    plt.xlabel('Time (min)',**tfont, fontsize='12')
     plt.legend()
     plt.show()
       
@@ -171,7 +171,7 @@ def ind_plots(t,y0):
     plt.plot(t,dls, label = 'DLS', color = 'crimson')
     plt.title('Subcortical Nuclei Activity',**tfont, fontweight = 'bold', fontsize='18')
     plt.ylabel('Firing Rate (Hz)',**tfont, fontsize='15')
-    plt.xlabel('t (s)',**tfont, fontsize='15')
+    plt.xlabel('Time (min)',**tfont, fontsize='15')
     plt.legend()
     plt.show()
     
@@ -179,7 +179,7 @@ def ind_plots(t,y0):
     plt.plot(t, alc, color = 'red')
     plt.title('Alcohol Consumed',**tfont, fontweight = 'bold', fontsize='18')
     plt.ylabel('Volume (mL)',**tfont, fontsize='15')
-    plt.xlabel('t (s)',**tfont, fontsize='15')
+    plt.xlabel('Time (min)',**tfont, fontsize='15')
     plt.show()
     plt.show()
 
