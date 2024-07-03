@@ -5,13 +5,15 @@ from scipy.integrate import odeint
 from scipy.integrate import solve_ivp
 from pythonizedModel import *
 from myfunctions import *
+import matplotlib.animation as animation
+from matplotlib.animation import PillowWriter
+
+tfont = {'fontname':'Times New Roman'}
 
 y0 = [0, 0.2, 0.2, 0.3, 0, 0]
 y_traj = [0, 0.2, 0.2, 0.3, 0, 0]
+t= np.linspace(0,50,1000)  
 
-t = np.linspace(0, 50, 1000)
 
-# sub_plots(t, y0)
-# comb_plots(t,y0)
-# ind_plots(t,y0)
-phase_space(y0,y_traj, t,4,3,['Binge', 'Stop'])
+
+vec_field(y0, y_traj, t, 2, 1, ['Stop', 'Binge'], 'no')
