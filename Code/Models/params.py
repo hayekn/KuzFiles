@@ -23,17 +23,17 @@ seekDRIVE = 0.01
 bingeDRIVE = 0.5
 stopDRIVE = 0.5
 nacDRIVE = -1.4
-dlsDRIVE = -1.4
+dlsDRIVE = -.8
 
 #SYNAPTIC WEIGHTS
 spTOseek = 5
 spTOstop = 1
 seekTOnac = 4
 seekTObin = 3
-binTOnac = 1
+binTOnac = 3
 binTOstop = 1
-binTOdls = 1
-stopTObin = 2.5
+binTOdls = 2
+stopTObin = 3
 vtaTOnac = 1
 vtaTOdls = 1
 apsTOseek = 1
@@ -44,12 +44,12 @@ nsLEVEL = 1
 nsSTART=15
 nsDURATION=10
 nsTOvta = 5
-nsTOstop = 1
+nsTOstop = 2
 
 #EXTRAS
 dlsWeight = .3
 TOLERANCE = 20
 daFACTOR = 0.1
 
-import pythonizedModel
-pythonizedModel
+#import pythonizedModel
+#pythonizedModel
