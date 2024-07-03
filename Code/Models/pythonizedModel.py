@@ -8,7 +8,7 @@ from scipy.integrate import solve_ivp
 import matplotlib.animation as animation
 
 
-
+#seek, binge, stop, nac, dls, ALCOHOL
 
 def derModel(t, y):
     seek, binge, stop, nac, dls, ALCOHOL = y
@@ -77,14 +77,14 @@ daFACTOR=daFACTOR
         setp = 1 - F(Esetp * (ALCOHOL - TOLERANCE))
         ns = nsLEVEL*(F(Ens*(nsSTART-t))+F(Ens*(t-nsSTART-nsDURATION))-1)
         vta = F(Evta*(ALCOHOL - TOLERANCE*daFACTOR + nsTOvta*ns))
-        aps = Eaps*((1-dlsWeight)*nac + dlsWeight*dls)/2
+        aps = Eaps*((1-dlsWeight)*nac + dlsWeight*dls)
 
         dseek_dt = (-seek + F(Eseek * (spTOseek * setp - apsTOseek * aps - seekDRIVE))) / seekTAU
         dbinge_dt = (-binge + F(Ebinge * (stopTObin * stop - seekTObin * seek - bingeDRIVE))) / bingeTAU
         dstop_dt = (-stop + F(Estop * (binTOstop * binge - nsTOstop*ns - spTOstop * setp - stopDRIVE))) / stopTAU
         dnac_dt = (-nac + F(Enac * (-vtaTOnac * vta - seekTOnac * seek - binTOnac * binge - nacDRIVE))) / nacTAU
         ddls_dt = (-dls + F(Edls * (-binTOdls * binge - vtaTOdls * vta - dlsDRIVE))) / dlsTAU
-        dALCOHOL_dt = ((1-dlsWeight)*nac + dlsWeight*dls)/2
+        dALCOHOL_dt = ((1-dlsWeight)*nac + dlsWeight*dls)
 
         return [dseek_dt, dbinge_dt, dstop_dt, dnac_dt, ddls_dt, dALCOHOL_dt]
 
@@ -116,8 +116,6 @@ def runGraphs():
     ax.legend()
 
     plt.show()
-
-runGraphs()
 
 def insulaNull(R, binExc = Ebinge, stopExc = Estop):
     binge = [F(binExc * (stopTObin * r  - bingeDRIVE)) / bingeTAU for r in R]
@@ -287,6 +285,13 @@ def dlsWeightAnim(n, save=False):
         plt.close()
     else:
         plt.show()
+
+def negStim(start, dur):
+    fig, ax = plt.subplots(figsize=(12, 5))
+    t = np.linspace(0, 50, 200)
+    y = xppaut_model(nsSTART=start, nsDURATION=dur)
+    ax.plot(t, y['Int'][])
+    avg = ((1-dlsWeight)*y[3] + dlsWeight*y[4])/2
 
 #bothBif(10, 100, [3, 8], [3, 8])
 
