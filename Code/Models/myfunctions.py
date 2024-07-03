@@ -1,7 +1,6 @@
 import numpy as np
-from params import *
+from params_AR import *
 import matplotlib.pyplot as plt
-import pythonizedModel 
 from scipy.integrate import odeint
 from scipy.integrate import solve_ivp
 import matplotlib.animation as animation
@@ -52,15 +51,15 @@ def xppaut_model(t, y0):
 
 #Plotting the Data
 def sub_plots(t,y0):
-    y= pythonizedModel.xppaut_model(t,y0)
+    y= xppaut_model(t,y0)
     seek = y['Int'][0]
     binge = y['Int'][1]
     stop = y['Int'][2]
     nac = y['Int'][3]
     dls = y['Int'][4]
     alc = y['Int'][5]
-    setp = 1-pythonizedModel.F(Esetp*(alc-TOLERANCE))
-    vta = pythonizedModel.F(Evta*(alc - TOLERANCE*daFACTOR))
+    setp = 1-F(Esetp*(alc-TOLERANCE))
+    vta = F(Evta*(alc - TOLERANCE*daFACTOR))
     for n in np.arange(len(alc)):
         if alc[n]>=TOLERANCE:
             thresh = t[n] #time at which threshold is reached 
@@ -103,15 +102,15 @@ def sub_plots(t,y0):
     plt.show()
 
 def comb_plots(t,y0):
-    y= pythonizedModel.xppaut_model(t,y0)
+    y= xppaut_model(t,y0)
     seek = y['Int'][0]
     binge = y['Int'][1]
     stop = y['Int'][2]
     nac = y['Int'][3]
     dls = y['Int'][4]
     alc = y['Int'][5]
-    setp = 1-pythonizedModel.F(Esetp*(alc-TOLERANCE))
-    vta = pythonizedModel.F(Evta*(alc - TOLERANCE*daFACTOR))
+    setp = 1-F(Esetp*(alc-TOLERANCE))
+    vta = F(Evta*(alc - TOLERANCE*daFACTOR))
     for n in np.arange(len(alc)):
         if alc[n]>=TOLERANCE:
             thresh = t[n] #time at which threshold is reached 
@@ -132,15 +131,15 @@ def comb_plots(t,y0):
     plt.show()
 
 def ind_plots(t,y0):
-    y= pythonizedModel.xppaut_model(t,y0)['Int']
+    y= xppaut_model(t,y0)['Int']
     seek = y[0]
     binge = y[1]
     stop = y[2]
     nac = y[3]
     dls = y[4]
     alc = y[5]
-    setp = 1-pythonizedModel.F(Esetp*(alc-TOLERANCE))
-    vta = pythonizedModel.F(Evta*(alc - TOLERANCE*daFACTOR))
+    setp = 1-F(Esetp*(alc-TOLERANCE))
+    vta = F(Evta*(alc - TOLERANCE*daFACTOR))
     for n in np.arange(len(alc)):
         if alc[n]>=TOLERANCE:
             thresh = t[n] #time at which threshold is reached 
@@ -210,7 +209,7 @@ def phase_space(y0, y_traj, t,n,m,name):
         for j in np.arange(numptsx2):      
             y0[n] = x1array[i,j]
             y0[m] = x2array[i,j]
-            deriv = pythonizedModel.derModel(0,y0)
+            deriv = derModel(0,y0)
             dx1dt_array[i,j]= deriv[n]
             dx2dt_array[i,j]= deriv[m]
     fig = plt.figure(figsize=(8, 6))
@@ -223,14 +222,14 @@ def phase_space(y0, y_traj, t,n,m,name):
     for i in np.arange(250):
         y0[n] = x1list_fine[i]
         y0[m] = x2list_fine[i]
-        setp = 1-pythonizedModel.F(Esetp * (y0[4] - TOLERANCE))
-        vta = pythonizedModel.F(Evta*(y0[5] - TOLERANCE*daFACTOR))
+        setp = 1-F(Esetp * (y0[4] - TOLERANCE))
+        vta = F(Evta*(y0[5] - TOLERANCE*daFACTOR))
         aps = Eaps*(y0[3] + y0[4])/2
-        nullcline[0,i] = (pythonizedModel.F(Eseek * (spTOseek * setp - apsTOseek * aps - seekDRIVE))) / seekTAU
-        nullcline[1,i] = (pythonizedModel.F(Ebinge * (stopTObin * y0[2] - seekTObin * y0[0] - bingeDRIVE))) / bingeTAU
-        nullcline[2,i] = (pythonizedModel.F(Estop * (binTOstop * y0[1] - spTOstop * setp - stopDRIVE))) / stopTAU
-        nullcline[3,i] = (pythonizedModel.F(Enac * (-vtaTOnac * vta - seekTOnac * y0[0] - binTOnac * y0[1] - nacDRIVE))) / nacTAU
-        nullcline[4,i] = (pythonizedModel.F(Edls * (-binTOdls * y0[1] - vtaTOdls * vta - dlsDRIVE))) / dlsTAU
+        nullcline[0,i] = (F(Eseek * (spTOseek * setp - apsTOseek * aps - seekDRIVE))) / seekTAU
+        nullcline[1,i] = (F(Ebinge * (stopTObin * y0[2] - seekTObin * y0[0] - bingeDRIVE))) / bingeTAU
+        nullcline[2,i] = (F(Estop * (binTOstop * y0[1] - spTOstop * setp - stopDRIVE))) / stopTAU
+        nullcline[3,i] = (F(Enac * (-vtaTOnac * vta - seekTOnac * y0[0] - binTOnac * y0[1] - nacDRIVE))) / nacTAU
+        nullcline[4,i] = (F(Edls * (-binTOdls * y0[1] - vtaTOdls * vta - dlsDRIVE))) / dlsTAU
     
     plt.plot(x1list_fine,nullcline[n,:],'b-',alpha=0.8,linewidth = 2.5)
     plt.plot(nullcline[m,:],x2list_fine,'b-',alpha=0.8,linewidth = 2.5)
@@ -239,7 +238,7 @@ def phase_space(y0, y_traj, t,n,m,name):
 
     #Plotting the Trajectories
     t_span = (0, 50)
-    y= pythonizedModel.xppaut_model(t,y_traj)['Int']
+    y= xppaut_model(t,y_traj)['Int']
     traj = np.zeros((6,len(t)))
     traj[0,:] = y[0] #seek
     traj[1,:] = y[1] #binge
@@ -247,8 +246,8 @@ def phase_space(y0, y_traj, t,n,m,name):
     traj[3,:] = y[3] #nac
     traj[4,:] = y[4] #dls
     traj[5,:] = y[5] #alc
-    setp = 1-pythonizedModel.F(Esetp*(y[5]-TOLERANCE))
-    vta = pythonizedModel.F(Evta*(y[5] - TOLERANCE*daFACTOR))
+    setp = 1-F(Esetp*(y[5]-TOLERANCE))
+    vta = F(Evta*(y[5] - TOLERANCE*daFACTOR))
     for i in np.arange(len(y[5])):
         if y[5][i]>=TOLERANCE:
             thresh = t[i] #time at which threshold is reached 
@@ -274,7 +273,7 @@ def vec_field(y0, y_traj,t, n, m, name, save):
     ax2 = fig.add_subplot(2, 2, 3)      
     ax3 = fig.add_subplot(2, 2, 4)      
     ax = [ax1, ax2, ax3]
-    init = pythonizedModel.xppaut_model(t, y0)['Int'] # Solving the system with IC
+    init = xppaut_model(t, y0)['Int'] # Solving the system with IC
 
     def update(z):
         ax1.clear()
@@ -283,17 +282,17 @@ def vec_field(y0, y_traj,t, n, m, name, save):
                 y = [init[0, z], init[1, z], init[2, z], init[3, z], init[4, z], init[5, z]]
                 y[n] = x1array[i, j]
                 y[m] = x2array[i, j]
-                deriv = pythonizedModel.derModel(t, y)
+                deriv = derModel(t, y)
                 dx1dt_array[i, j] = deriv[n]
                 dx2dt_array[i, j] = deriv[m]
         ax1.quiver(x1array, x2array, dx1dt_array, dx2dt_array, alpha=0.25, width = 0.003)
         
-        y = pythonizedModel.xppaut_model(t, y_traj)['Int']
+        y = xppaut_model(t, y_traj)['Int']
         traj = np.zeros((6, len(t)))
         for k in np.arange(6):
             traj[k, :] = y[k]  # seek, binge, stop, nac, dls, alc
         
-        setp = 1-pythonizedModel.F(Esetp*(traj[5,:]-TOLERANCE))
+        setp = 1-F(Esetp*(traj[5,:]-TOLERANCE))
 
         ax1.plot(traj[n, 0:z], traj[m, 0:z], color='black', linewidth = '2')
         ax1.plot(traj[n,z],traj[m,z],marker='o', color = 'red', markersize='10', zorder=10)
@@ -306,14 +305,14 @@ def vec_field(y0, y_traj,t, n, m, name, save):
                 y0[k] = traj[k,z]
             y0[n] = x1list_fine[i]
             y0[m] = x2list_fine[i]
-            setp_n = np.array(1 - pythonizedModel.F(Esetp * (y0[5] - TOLERANCE)))
-            vta = pythonizedModel.F(Evta * (y0[5] - TOLERANCE * daFACTOR))
+            setp_n = np.array(1 - F(Esetp * (y0[5] - TOLERANCE)))
+            vta = F(Evta * (y0[5] - TOLERANCE * daFACTOR))
             aps = Eaps * (y0[3] + y0[4]) / 2
-            nullcline[0, i] = (pythonizedModel.F(Eseek * (spTOseek * setp_n - apsTOseek * aps - seekDRIVE))) / seekTAU
-            nullcline[1, i] = (pythonizedModel.F(Ebinge * (stopTObin * y0[2] - seekTObin * y0[0] - bingeDRIVE))) / bingeTAU
-            nullcline[2, i] = (pythonizedModel.F(Estop * (binTOstop * y0[1] - spTOstop * setp_n - stopDRIVE))) / stopTAU
-            nullcline[3, i] = (pythonizedModel.F(Enac * (-vtaTOnac * vta - seekTOnac * y0[0] - binTOnac * y0[1] - nacDRIVE))) / nacTAU
-            nullcline[4, i] = (pythonizedModel.F(Edls * (-binTOdls * y0[1] - vtaTOdls * vta - dlsDRIVE))) / dlsTAU
+            nullcline[0, i] = (F(Eseek * (spTOseek * setp_n - apsTOseek * aps - seekDRIVE))) / seekTAU
+            nullcline[1, i] = (F(Ebinge * (stopTObin * y0[2] - seekTObin * y0[0] - bingeDRIVE))) / bingeTAU
+            nullcline[2, i] = (F(Estop * (binTOstop * y0[1] - spTOstop * setp_n - stopDRIVE))) / stopTAU
+            nullcline[3, i] = (F(Enac * (-vtaTOnac * vta - seekTOnac * y0[0] - binTOnac * y0[1] - nacDRIVE))) / nacTAU
+            nullcline[4, i] = (F(Edls * (-binTOdls * y0[1] - vtaTOdls * vta - dlsDRIVE))) / dlsTAU
         
         ax1.plot(x1list_fine, nullcline[m, :], 'b-', alpha=0.8, linewidth=1.5)
         ax1.plot(nullcline[n, :], x2list_fine, 'r-', alpha=0.8, linewidth=1.5)
@@ -340,9 +339,10 @@ def vec_field(y0, y_traj,t, n, m, name, save):
         plt.subplots_adjust(hspace=0.3)
 
         return ax
-
     ani = animation.FuncAnimation(fig, update, frames=len(t), interval=5,repeat=False)
-    plt.show()
+
     if save =='yes':
-        writer = PillowWriter(fps=10)
+        writer = PillowWriter(fps=30)
         ani.save('/Users/amyrude/Downloads/phase_plane_animation_stable_null.gif', writer=writer)
+    plt.show()
+    
