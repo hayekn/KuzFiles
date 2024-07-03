@@ -1,5 +1,6 @@
 import numpy as np
 from params import *
+import math
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
 from scipy.integrate import odeint
@@ -176,8 +177,6 @@ def stopBif(limit, reso, save=False):
     else:
         plt.show()
 
-
-
 def bothBif(limit, reso, setBin, setStop, save=False):
     fig = plt.figure(figsize=(10, 5))
     t = np.linspace(0, 50, 300)
@@ -282,7 +281,8 @@ def binWeightAnim(n, save=False):
     else:
         plt.show()
 
-binWeightAnim(60)
+bothBif(10, 100, [3, 8], [3, 8])
+
 '''stopBif()
 bingeBif()
 
