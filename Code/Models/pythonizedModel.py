@@ -1,7 +1,8 @@
 import numpy as np
 from params import *
+import math
 import matplotlib.pyplot as plt
-
+from scipy.optimize import fsolve
 from scipy.integrate import odeint
 from scipy.integrate import solve_ivp
 import matplotlib.animation as animation
@@ -134,7 +135,6 @@ def insulaBif(binExc = Ebinge, stopExc = Estop):
     print(A)
     return A
 
-from scipy.optimize import fsolve
 def system(inputs, binExc, stopExc):
     return [inputs[0] - F(binExc * (stopTObin * inputs[1]  - bingeDRIVE)) / bingeTAU,
     inputs[1] - F(stopExc * (binTOstop * inputs[0]  - stopDRIVE)) / stopTAU]
@@ -172,12 +172,11 @@ def stopBif(limit, reso, save=False):
             ax.scatter(E, [equiFinder(i, j, stopExc=e)[1] for e in E], c='black', s=.1)
     plt.xlabel("Stop Excitability")
     plt.ylabel("Equilibrium Value")
+        
     if save:
         plt.savefig("saveBif", dpi=350)
     else:
         plt.show()
-
-
 
 def bothBif(limit, reso, setBin, setStop, save=False):
     fig = plt.figure(figsize=(10, 5))
@@ -231,7 +230,7 @@ def bothBif(limit, reso, setBin, setStop, save=False):
     else:
         plt.show()
 
-def binWeightAnim(n, save=False):
+def dlsWeightAnim(n, save=False):
     fig, ax = plt.subplots(figsize=(12, 5))
     t = np.linspace(0, n, 1000)
     y = xppaut_model(t, y0, vtaTOdls=0, vtaTOnac=0)
@@ -283,7 +282,8 @@ def binWeightAnim(n, save=False):
     else:
         plt.show()
 
-binWeightAnim(60)
+bothBif(10, 100, [3, 8], [3, 8])
+
 '''stopBif()
 bingeBif()
 
