@@ -65,6 +65,14 @@ vtaTOnac=vtaTOnac,
 vtaTOdls=vtaTOdls,
 apsTOseek=apsTOseek,
 
+#NEGATIVE STIM
+Ens = Ens,
+nsLEVEL = nsLEVEL,
+nsSTART=nsSTART,
+nsDURATION=nsDURATION,
+nsTOvta = nsTOvta,
+nsTOstop = nsTOstop,
+
 #EXTRAS
 dlsWeight=dlsWeight,
 TOLERANCE=TOLERANCE,
@@ -286,12 +294,28 @@ def dlsWeightAnim(n, save=False):
     else:
         plt.show()
 
-def negStim(start, dur):
+def negStim(start, dur, tol, save=False):
     fig, ax = plt.subplots(figsize=(12, 5))
-    t = np.linspace(0, 50, 200)
-    y = xppaut_model(nsSTART=start, nsDURATION=dur)
-    ax.plot(t, y['Int'][])
-    avg = ((1-dlsWeight)*y[3] + dlsWeight*y[4])/2
+    t = np.linspace(0, 100, 200)
+    y = xppaut_model(t, nsSTART=start, nsDURATION=dur, TOLERANCE=tol)
+    ax.plot(t, y['Int'][3], label="NAc")
+    ax.plot(t, y['Int'][4], label="DLS")
+    #ax.plot(t, y['Int'][1])
+    avg = ((1-dlsWeight)*y['Int'][3] + dlsWeight*y['Int'][4])
+    ax.plot(t, avg, '--',label="Weighted Average", color='black')
+    startInx = int(round((start/t[-1])*200, 1))
+    endInx = int(round(((start+dur)/t[-1])*200, 1))
+    ax.fill_between(t[startInx:endInx], 0, 1, color='red', alpha=.2)
+    plt.xlabel("T (min)")
+    plt.ylabel("Normalized Activity")
+    plt.text((start+dur)/2.8, 0.05, "Negative Stimuli")
+    plt.legend()
+    if save:
+        plt.savefig("negStim", dpi=350)   
+    else: 
+        plt.show()
+
+negStim(5, 20, 50, True)
 
 #bothBif(10, 100, [3, 8], [3, 8])
 
