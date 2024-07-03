@@ -3,7 +3,7 @@ from params import *
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
 from scipy.integrate import solve_ivp
-from pythonizedModel import *
+# from pythonizedModel import *
 from myfunctions import *
 import matplotlib.animation as animation
 from matplotlib.animation import PillowWriter
