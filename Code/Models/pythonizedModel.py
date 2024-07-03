@@ -1,7 +1,7 @@
 import numpy as np
 from params import *
 import matplotlib.pyplot as plt
-
+from scipy.optimize import fsolve
 from scipy.integrate import odeint
 from scipy.integrate import solve_ivp
 import matplotlib.animation as animation
@@ -134,7 +134,6 @@ def insulaBif(binExc = Ebinge, stopExc = Estop):
     print(A)
     return A
 
-from scipy.optimize import fsolve
 def system(inputs, binExc, stopExc):
     return [inputs[0] - F(binExc * (stopTObin * inputs[1]  - bingeDRIVE)) / bingeTAU,
     inputs[1] - F(stopExc * (binTOstop * inputs[0]  - stopDRIVE)) / stopTAU]
