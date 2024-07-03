@@ -75,12 +75,13 @@ daFACTOR=daFACTOR
         seek, binge, stop, nac, dls, ALCOHOL = y
 
         setp = 1 - F(Esetp * (ALCOHOL - TOLERANCE))
-        vta = F(Evta*(ALCOHOL - TOLERANCE*daFACTOR))
+        ns = nsLEVEL*(F(Ens*(nsSTART-t))+F(Ens*(t-nsSTART-nsDURATION))-1)
+        vta = F(Evta*(ALCOHOL - TOLERANCE*daFACTOR + nsTOvta*ns))
         aps = Eaps*((1-dlsWeight)*nac + dlsWeight*dls)/2
 
         dseek_dt = (-seek + F(Eseek * (spTOseek * setp - apsTOseek * aps - seekDRIVE))) / seekTAU
         dbinge_dt = (-binge + F(Ebinge * (stopTObin * stop - seekTObin * seek - bingeDRIVE))) / bingeTAU
-        dstop_dt = (-stop + F(Estop * (binTOstop * binge - spTOstop * setp - stopDRIVE))) / stopTAU
+        dstop_dt = (-stop + F(Estop * (binTOstop * binge - nsTOstop*ns - spTOstop * setp - stopDRIVE))) / stopTAU
         dnac_dt = (-nac + F(Enac * (-vtaTOnac * vta - seekTOnac * seek - binTOnac * binge - nacDRIVE))) / nacTAU
         ddls_dt = (-dls + F(Edls * (-binTOdls * binge - vtaTOdls * vta - dlsDRIVE))) / dlsTAU
         dALCOHOL_dt = ((1-dlsWeight)*nac + dlsWeight*dls)/2
@@ -98,7 +99,8 @@ def runGraphs():
     y = xppaut_model(t, y0, vtaTOdls=0, vtaTOnac=0)
     ALCOHOL = y['Int'][5]
     setp = 1 - F(Esetp * (ALCOHOL - TOLERANCE))
-    vta = F(Evta*(ALCOHOL - TOLERANCE*daFACTOR))
+    ns = nsLEVEL*(F(Ens*(nsSTART-t))+F(Ens*(t-(nsSTART+nsDURATION)))-1)
+    vta = F(Evta*(ALCOHOL - TOLERANCE*daFACTOR + ns))
 
     ax.plot(t, y['Int'][0], label="seek")
     ax.plot(t, y['Int'][1], label="binge")
@@ -106,12 +108,16 @@ def runGraphs():
     ax.plot(t, y['Int'][3], label="nac")
     ax.plot(t, y['Int'][4], label="dls")
     ax.plot(t, setp, label="setp")
+    ax.plot(t, vta, label="vta")
+    ax.plot(t, ns, label="negative stimuli")
     #ax.plot(t,vta, label="vta")
     ax.plot(t, (y['Int'][3]+y['Int'][4])/2, label="avg")
     #ax.plot(t, ALCOHOL, label="ALCOHOL")
     ax.legend()
 
     plt.show()
+
+runGraphs()
 
 def insulaNull(R, binExc = Ebinge, stopExc = Estop):
     binge = [F(binExc * (stopTObin * r  - bingeDRIVE)) / bingeTAU for r in R]
@@ -282,7 +288,7 @@ def dlsWeightAnim(n, save=False):
     else:
         plt.show()
 
-bothBif(10, 100, [3, 8], [3, 8])
+#bothBif(10, 100, [3, 8], [3, 8])
 
 '''stopBif()
 bingeBif()
