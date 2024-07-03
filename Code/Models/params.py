@@ -1,3 +1,7 @@
+#INIT
+y0 = [0, .2, .2, 0.3, 0, 0]
+
+#EXCITABILITIES
 Ebinge = 10.5
 Estop = 10.5
 Enac = 1.84
@@ -35,8 +39,8 @@ vtaTOdls = 1
 apsTOseek = 1
 
 #EXTRAS
-dlsWeight = 0.5
-TOLERANCE = 5
+dlsWeight = .3
+TOLERANCE = 10
 daFACTOR = 0.1
 
 
