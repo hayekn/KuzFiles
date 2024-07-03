@@ -140,7 +140,8 @@ def ind_plots(t,y0):
     plt.xlabel('t (s)',**tfont, fontsize='15')
     plt.show()
     plt.show()
-    
+
+
 #Plotting the Nullcline and Phase-Space
 
 def phase_space(y0, y_traj, t,n,m,name): 
@@ -196,22 +197,25 @@ def phase_space(y0, y_traj, t,n,m,name):
     #Plotting the Trajectories
     t_span = (0, 50)
     y= pythonizedModel.xppaut_model(t,y_traj)['Int']
-    seek = y[0]
-    binge = y[1]
-    stop = y[2]
-    nac = y[3]
-    dls = y[4]
-    alc = y[5]
-    setp = 1-pythonizedModel.F(Esetp*(alc-TOLERANCE))
-    vta = pythonizedModel.F(Evta*(alc - TOLERANCE*daFACTOR))
-    for n in np.arange(len(alc)):
-        if alc[n]>=TOLERANCE:
-            thresh = t[n] #time at which threshold is reached 
-            index = n #index of when threshold is reached
+    traj = np.zeros((6,len(t)))
+    traj[0,:] = y[0] #seek
+    traj[1,:] = y[1] #binge
+    traj[2,:] = y[2] #stop
+    traj[3,:] = y[3] #nac
+    traj[4,:] = y[4] #dls
+    traj[5,:] = y[5] #alc
+    setp = 1-pythonizedModel.F(Esetp*(y[5]-TOLERANCE))
+    vta = pythonizedModel.F(Evta*(y[5] - TOLERANCE*daFACTOR))
+    for i in np.arange(len(y[5])):
+        if y[5][i]>=TOLERANCE:
+            thresh = t[i] #time at which threshold is reached 
+            index = i #index of when threshold is reached
             break
-
-    plt.plot(stop, binge, color = 'black')
-    plt.plot(stop[0], binge[0], markersize = '15' , marker = '*', color = 'lightcoral')
-    plt.plot(stop[index-10], binge[index-10], markersize = '10' , marker = 'o', color = 'lightcoral')
-    plt.plot(stop[-1], binge[-1], markersize = '10' , marker = 'o', color = 'red')
+    print(len(traj[1,:]))
+    print(len(traj[2,:]))
+    print('n=',n)
+    plt.plot(traj[n,:], traj[m,:], color = 'black')
+    plt.plot(traj[n,0], traj[m,0], markersize = '15' , marker = '*', color = 'lightcoral')
+    plt.plot(traj[n,index-10], traj[m,index-10], markersize = '10' , marker = 'o', color = 'lightcoral')
+    plt.plot(traj[n,-1], traj[m,-1], markersize = '10' , marker = 'o', color = 'red')
     plt.show()
