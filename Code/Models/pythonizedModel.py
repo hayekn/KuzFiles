@@ -3,6 +3,7 @@ from params import *
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
 from scipy.integrate import solve_ivp
+from scipy.optimize import fsolve
 import math
 
 
@@ -91,10 +92,10 @@ def insulaBif(binExc = Ebinge, stopExc = Estop):
     print(A)
     return A
 
-from scipy.optimize import fsolve
 def system(inputs, binExc, stopExc):
     return [inputs[0] - F(binExc * (stopTObin * inputs[1]  - bingeDRIVE)) / bingeTAU,
     inputs[1] - F(stopExc * (binTOstop * inputs[0]  - stopDRIVE)) / stopTAU]
+
 def equiFinder(i, j, binExc=Ebinge, stopExc=Estop):
     return fsolve(system, [i, j], args=(binExc, stopExc))
 
@@ -133,8 +134,6 @@ def stopBif(limit, reso, save=False):
         plt.savefig("saveBif", dpi=350)
     else:
         plt.show()
-
-
 
 def bothBif(limit, reso, setBin, setStop, save=False):
     fig = plt.figure(figsize=(10, 5))
@@ -188,8 +187,6 @@ def bothBif(limit, reso, setBin, setStop, save=False):
     else:
         plt.show()
 
-bothBif(10, 1000, [8], [8], True)
-
 def binWeightAnim(n, save=False):
     fig, ax = plt.subplots(figsize=(12, 5))
     t = np.linspace(0, n, 1000)
@@ -242,6 +239,7 @@ def binWeightAnim(n, save=False):
     else:
         plt.show()
 
+bothBif(10, 1000, [8], [8], True)
 '''stopBif()
 bingeBif()
 
