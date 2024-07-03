@@ -1,5 +1,5 @@
 #INIT
-[0, 0.2, 0.2, 0.3, 0, 0]
+y0 = [0, .2, .2, 0.3, 0, 0]
 
 #EXCITABILITIES
 Ebinge = 10.5
@@ -40,7 +40,7 @@ apsTOseek = 1
 
 #EXTRAS
 dlsWeight = .3
-TOLERANCE = 5
+TOLERANCE = 10
 daFACTOR = 0.1
 
 
