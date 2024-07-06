@@ -150,18 +150,18 @@ def ind_plots(t,y0):
     plt.plot(t, seek+setp, label = 'Combined', color = 'lightsteelblue')
     plt.plot(t, seek, label = 'Seek', color = 'midnightblue')
     plt.plot(t, setp, label = 'Setpoint', color = 'royalblue')
-    plt.title('mPFC Activity', **tfont, fontweight = 'bold', fontsize='14')
-    plt.ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
-    plt.xlabel('Time (min)',**tfont, fontsize='12')
+    plt.title('mPFC Activity', **tfont, fontweight = 'bold', fontsize='18')
+    plt.ylabel('Firing Rate (Hz)',**tfont, fontsize='15')
+    plt.xlabel('Time (min)',**tfont, fontsize='15')
     plt.legend()
     plt.show()
 
     plt.axvline(x=thresh, color = 'silver',linestyle='dashed')
     plt.plot(t, binge, label ='Binge', color = 'mediumseagreen')
     plt.plot(t, stop, label = 'Stop', color = 'darkgreen')
-    plt.title('Insular Activity',**tfont, fontweight = 'bold', fontsize='14')
-    plt.ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
-    plt.xlabel('Time (min)',**tfont, fontsize='12')
+    plt.title('Insular Activity',**tfont, fontweight = 'bold', fontsize='18')
+    plt.ylabel('Firing Rate (Hz)',**tfont, fontsize='15')
+    plt.xlabel('Time (min)',**tfont, fontsize='15')
     plt.legend()
     plt.show()
       
@@ -169,6 +169,7 @@ def ind_plots(t,y0):
     plt.plot(t, vta, label = 'DA', color = 'lightcoral')
     plt.plot(t,nac, label = 'NAc', color = 'maroon')
     plt.plot(t,dls, label = 'DLS', color = 'crimson')
+    plt.plot(t,(dlsWeight*dls)+((1-dlsWeight)*nac), label = 'Average STR', color = 'grey')
     plt.title('Subcortical Nuclei Activity',**tfont, fontweight = 'bold', fontsize='18')
     plt.ylabel('Firing Rate (Hz)',**tfont, fontsize='15')
     plt.xlabel('Time (min)',**tfont, fontsize='15')
@@ -339,10 +340,74 @@ def vec_field(y0, y_traj,t, n, m, name, save):
         plt.subplots_adjust(hspace=0.3)
 
         return ax
-    ani = animation.FuncAnimation(fig, update, frames=len(t), interval=5,repeat=False)
+    ani = animation.FuncAnimation(fig, update, frames=len(t), interval=1,repeat=False)
 
     if save =='yes':
         writer = PillowWriter(fps=30)
         ani.save('/Users/amyrude/Downloads/phase_plane_animation_stable_null.gif', writer=writer)
     plt.show()
+
+
+def paramter_adj(y0,t,save): 
+    param = np.linspace(1.5,3.5,10)
+    fig, axs = plt.subplots(2, 2, figsize=(10, 8))
+    def update(z):
+        binTOdls = param[z]
+        y= xppaut_model(t,y0)
+        seek = y['Int'][0]
+        binge = y['Int'][1]
+        stop = y['Int'][2]
+        nac = y['Int'][3]
+        dls = y['Int'][4]
+        alc = y['Int'][5]
+        setp = 1-F(Esetp*(alc-TOLERANCE))
+        vta = F(Evta*(alc - TOLERANCE*daFACTOR))
+        for n in np.arange(len(alc)):
+            if alc[n]>=TOLERANCE:
+                thresh = t[n] #time at which threshold is reached 
+                index = n #index of when threshold is reached
+                break
+
+        axs[0,0].axvline(x=thresh, color = 'silver',linestyle='dashed')
+        axs[0,0].plot(t, seek+setp, label = 'Combined', color = 'lightsteelblue')
+        axs[0,0].plot(t, seek, label = 'Seek', color = 'midnightblue')
+        axs[0,0].plot(t, setp, label = 'Setpoint', color = 'royalblue')
+        axs[0,0].set_title('mPFC Activity', **tfont, fontweight = 'bold', fontsize='14')
+        axs[0,0].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
+        axs[0,0].set_xlabel('Time (min)',**tfont, fontsize='12')
+        axs[0,0].legend()
+
+        axs[0,1].axvline(x=thresh, color = 'silver',linestyle='dashed')
+        axs[0,1].plot(t, binge, label ='Binge', color = 'mediumseagreen')
+        axs[0,1].plot(t, stop, label = 'Stop', color = 'darkgreen')
+        axs[0,1].set_title('Insular Activity',**tfont, fontweight = 'bold', fontsize='14')
+        axs[0,1].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
+        axs[0,1].set_xlabel('Time (min)',**tfont, fontsize='12')
+        axs[0,1].legend()
+
+        axs[1,0].axvline(x=thresh, color = 'silver',linestyle='dashed')
+        axs[1,0].plot(t, vta, label = 'DA', color = 'lightcoral')
+        axs[1,0].plot(t,nac, label = 'NAc', color = 'maroon')
+        axs[1,0].plot(t,dls, label = 'DLS', color = 'crimson')
+        axs[1,0].set_title('Subcortical Nuclei Activity',**tfont, fontweight = 'bold', fontsize='14')
+        axs[1,0].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
+        axs[1,0].set_xlabel('Time (min)',**tfont, fontsize='12')
+        axs[1,0].legend()
+
+        axs[1,1].axvline(x=thresh, color = 'silver',linestyle='dashed')
+        axs[1,1].plot(t, alc, color = 'red')
+        axs[1,1].set_title('Alcohol Consumed',**tfont, fontweight = 'bold', fontsize='14')
+        axs[1,1].set_ylabel('Volume (mL)',**tfont, fontsize='12')
+        axs[1,1].set_xlabel('Time (min)',**tfont, fontsize='12')
+        plt.subplots_adjust(wspace=0.2, hspace=0.3)
+        plt.show()
+
+        return axs
+    ani = animation.FuncAnimation(fig, update, frames=len(param), interval=1,repeat=False)
+    if save =='yes':
+        writer = PillowWriter(fps=30)
+        ani.save('/Users/amyrude/Downloads/phase_plane_animation_stable_null.gif', writer=writer)
+    plt.show()
+
+
     
