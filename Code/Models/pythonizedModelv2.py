@@ -57,8 +57,8 @@ daFACTOR=daFACTOR
     def model(t, y):
         seek, binge, nac, ALCOHOL, aps = y
 
-        setp = (1/(decayFac * t+1))*F(Esetp * (TOLERANCE - ALCOHOL))
-        #setp = F(Esetp*((ALCOHOL - TOLERANCE)))+ F(Esetp*(TOLERANCE - ALCOHOL - spDURATION))-1
+        setp = (1/(decayFac * t+1))*F(Esetp * (TOLERANCE - ALCOHOL)) #DECAYING SETPOINT
+        #setp = F(Esetp*((ALCOHOL - TOLERANCE)))+ F(Esetp*(TOLERANCE - ALCOHOL - spDURATION))-1 #SPECIFIED DURATION SETPOINT
         ns = nsLEVEL*(F(Ens*(nsSTART-t))+F(Ens*(t-nsSTART-nsDURATION))-1)
         vta = F(Evta*(ALCOHOL - TOLERANCE*daFACTOR + nsTOvta*ns))
         
@@ -75,16 +75,17 @@ daFACTOR=daFACTOR
     return {'Int':y, 'Der':[model(t,y0) for t in t]}
 
 
-def runGraphs(end=0, frames=0, nsAnimation=False, save=False):
+def runGraphs(duration=50, end=0, frames=0, nsAnimation=False, save=False):
     global fig, axs
     fig, axs = plt.subplots(2, 3, figsize=(10, 6))
     global y0
     y0 = [0, 0.2, 0.3, 0, 0]
     global t
-    t = np.linspace(0, 50, 1000)
-    y = xppaut_model(t, y0=y0)
+    t = np.linspace(0, duration, 1000)
+    if not nsAnimation:
+        nsLEVEL=0
+    y = xppaut_model(t, y0=y0, nsLEVEL=nsLEVEL)
     ALCOHOL = y['Int'][3]
-    #setp = F(Esetp*((ALCOHOL - TOLERANCE)))+F(Esetp*(TOLERANCE - ALCOHOL - spDURATION))-1
     setp = (1/(decayFac * t+1))*F(Esetp * (TOLERANCE - ALCOHOL))
     ns = nsLEVEL*(F(Ens*(nsSTART-t))+F(Ens*(t-(nsSTART+nsDURATION)))-1)
     vta = F(Evta*(ALCOHOL - TOLERANCE*daFACTOR + ns))
@@ -105,13 +106,16 @@ def runGraphs(end=0, frames=0, nsAnimation=False, save=False):
     global da
     da = axs[1, 1].plot(t, vta, label="vta")[0]
     global neg
-    neg = axs[1, 2].plot(t, ns, label="negStim")[0]
+    neg = axs[1, 2].plot(t, ALCOHOL, label="ALCOHOL")[0] #ALC OR NEGSTIM, CHANGE MANUALLY
     
     for i in range(2):
-         for j in range(3):
+         for j in range(2):
               axs[i, j].set_xlabel('T')
               axs[i, j].legend()
               axs[i, j].set_ylim(0, 1)
+
+    axs[1, 2].set_xlabel('T')
+    axs[1, 2].legend()
 
     def negAnim(frame):
         newNS = end*(frame/frames)
@@ -119,7 +123,6 @@ def runGraphs(end=0, frames=0, nsAnimation=False, save=False):
         ALCOHOL = newY['Int'][3]
         
         ns = nsLEVEL*(F(Ens*(newNS-t))+F(Ens*(t-(newNS+nsDURATION)))-1)
-        #setp = F(Esetp*((ALCOHOL - TOLERANCE)))+F(Esetp*(TOLERANCE - ALCOHOL - spDURATION))-1
         setp = (1/(decayFac * t+1))*F(Esetp * (TOLERANCE - ALCOHOL))
         vta = F(Evta*(newY['Int'][3] - TOLERANCE*daFACTOR + ns))
         
@@ -128,9 +131,8 @@ def runGraphs(end=0, frames=0, nsAnimation=False, save=False):
         nac.set_data(t, newY['Int'][2])
         sp.set_data(t, setp)
         da.set_data(t, vta)
-        neg.set_data(t, ns)
-        #alc.set_data(t, newY['Int'][3])
-        
+        neg.set_data(t, ALCOHOL) #ALC OR NEGSTIM, CHANGE MANUALLY
+
         return (seek, bin, nac, sp, da, neg)
     if nsAnimation:
         ani = animation.FuncAnimation(fig=fig, func=negAnim, frames=frames, interval=10)
@@ -145,5 +147,5 @@ def runGraphs(end=0, frames=0, nsAnimation=False, save=False):
     plt.show()
     
 
-runGraphs(50, 150, True, True)
+runGraphs(120, False, False)
 
