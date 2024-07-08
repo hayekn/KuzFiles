@@ -10,7 +10,7 @@ tfont = {'fontname':'Times New Roman'}
 
 y0 = [0, 0, 0.1, 0, 0.3, 0.3, 0] #seek, setp, binge, spike, nac, av, ALCOHOL
 y_traj = [0, 0, 0.1, 0, 0.3, 0.3, 0] 
-t= np.linspace(0,50,10)  
+t= np.linspace(0,50,500)  
 
 ## Defining the Parameters
 
@@ -134,7 +134,7 @@ def xppaut_model_noise(t, y0):
 
 
 #Plotting the Vectorfield
-def vector_field(y0,y_traj, t, n,m, name):
+def vector_field(y0,y_traj, t, n,m, name, save):
     x1min, x1max, numptsx1, x2min, x2max, numptsx2 = -0.1, 1, 12, -0.1, 1, 12
     x1list = np.linspace(x1min, x1max, numptsx1)
     x2list = np.linspace(x2min, x2max, numptsx2)
@@ -170,6 +170,7 @@ def vector_field(y0,y_traj, t, n,m, name):
 
         x1list_fine = np.linspace(x1min, x1max, 250)
         x2list_fine = np.linspace(x2min, x2max, 250)
+        time = np.linspace(0,50,250)
         nullcline = np.zeros((6, 250)) # seek, setp, sustained, spike, nac, av
         for i in np.arange(250):
             for k in np.arange(6):
@@ -184,24 +185,14 @@ def vector_field(y0,y_traj, t, n,m, name):
 
             #Insular System (sustained+spike)
             nullcline[2,i] = (F(Esustained * (- seekTOsus * y0[0] - sustainedDRIVE ))) / sustainedTAU
-            nullcline[3,i] = (F(Espike * (((t-spikeDUR)- seekTOspike * y0[0] -spikeDRIVE )))) / spikeTAU
+            nullcline[3,i] = (F(Espike * (((time[i]-spikeDUR)- seekTOspike * y0[0] -spikeDRIVE )))) / spikeTAU
 
             insula = (y0[2] + y0[3])/insula_norm
             #Striatal System
-            nullcline[4,i]= (-y0[4] + F(Enac * (-vtaTOnac * vta - seekTOnac * y0[0] - binTOnac * insula - nacDRIVE ))) / nacTAU
+            nullcline[4,i]= (F(Enac * (-vtaTOnac * vta - seekTOnac * y0[0] - binTOnac * insula - nacDRIVE ))) / nacTAU
             #Alcohol Tracking
-            nullcline[5,i] = (-y0[5] + F(Eav * (-vtaTOnac * vta - seekTOnac * y0[0] - binTOnac * insula - avDRIVE ))) / avTAU
-            
-            
-            # setp_n = np.array(1 - F(Esetp * (y0[5] - TOLERANCE)))
-            # vta = F(Evta * (y0[5] - TOLERANCE * daFACTOR))
-            # aps = Eaps * (y0[3] + y0[4]) / 2
-            # nullcline[0, i] = (F(Eseek * (spTOseek * setp_n - apsTOseek * aps - seekDRIVE))) / seekTAU
-            # nullcline[1, i] = (F(Ebinge * (stopTObin * y0[2] - seekTObin * y0[0] - bingeDRIVE))) / bingeTAU
-            # nullcline[2, i] = (F(Estop * (binTOstop * y0[1] - spTOstop * setp_n - stopDRIVE))) / stopTAU
-            # nullcline[3, i] = (F(Enac * (-vtaTOnac * vta - seekTOnac * y0[0] - binTOnac * y0[1] - nacDRIVE))) / nacTAU
-            # nullcline[4, i] = (F(Edls * (-binTOdls * y0[1] - vtaTOdls * vta - dlsDRIVE))) / dlsTAU
-        
+            nullcline[5,i] = (F(Eav * (-vtaTOnac * vta - seekTOnac * y0[0] - binTOnac * insula - avDRIVE ))) / avTAU
+              
         ax1.plot(x1list_fine, nullcline[m, :], 'b-', alpha=0.8, linewidth=1.5)
         ax1.plot(nullcline[n, :], x2list_fine, 'r-', alpha=0.8, linewidth=1.5)
         ax1.set_xlabel(name[0], fontweight='bold', fontsize=15, **tfont)
@@ -214,7 +205,7 @@ def vector_field(y0,y_traj, t, n,m, name):
         ax2.set_ylabel('Firing Rate (Hz)', fontweight='bold', fontsize=15, **tfont)
         ax2.set_xlim(0,t[-1])
         ax2.set_ylim(0,1.05)        
-        ax2.set_title('Insular Activity', **tfont, fontweight = 'bold', fontsize = '15')
+        ax2.set_title('Neuron Activity', **tfont, fontweight = 'bold', fontsize = '15')
         ax2.legend(name)
     
         ax3.plot(t[0:z],traj[1,0:z], color = 'darkgreen', label = 'Setpoint')
@@ -226,10 +217,13 @@ def vector_field(y0,y_traj, t, n,m, name):
         return ax
     
     ani = animation.FuncAnimation(fig, update, frames=len(t), interval=1,repeat=False)
+    if save =='yes':
+        writer = PillowWriter(fps=30)
+        ani.save('/Users/amyrude/Downloads/seek_binge_phaseplane.gif', writer=writer)
     plt.show()
 
 
-vector_field(y0,y_traj,t,0,2, ['Seek', 'Binge'])
+vector_field(y0,y_traj,t,0,2, ['Seek', 'Binge'], 'no')
 
 
 
