@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
 from scipy.integrate import odeint
 from scipy.integrate import solve_ivp
+from SALib.analyze import fast
+from SALib.sample import fast_sampler
 import matplotlib.animation as animation
 
 
@@ -294,6 +296,29 @@ def dlsWeightAnim(n, save=False):
     else:
         plt.show()
 
+
+def runANALYSIS(n):
+    problem = {
+    'num_vars': 4,
+    'names': ['Edls', 'Enac', 'seekTObin', 'seekTOnac'],
+    'bounds': [[0, 10], [0, 10], [0, 4], [0, 4]]
+    }
+    param_values = fast_sampler.sample(problem, 128)
+    t = np.linspace(0, n, 100)
+    A = []
+
+    for i in np.arange(0, 100, 1):
+        Y = []
+        for params in param_values:
+            y = xppaut_model(t, Edls=params[0], Enac=params[1], seekTObin=params[2], seekTOnac=params[3])['Int']
+            Y.append(((1-dlsWeight)*y[3][i] + dlsWeight*y[4][i]))
+        Y = np.array(Y)
+        Si = fast.analyze(problem, Y)
+        A.append(Si['ST'])
+        print(i)
+
+
+
 def negStim(start, dur, tol, save=False):
     fig, ax = plt.subplots(figsize=(12, 5))
     t = np.linspace(0, 100, 200)
@@ -315,7 +340,7 @@ def negStim(start, dur, tol, save=False):
     else: 
         plt.show()
 
-negStim(5, 20, 50, True)
+dlsWeightAnim(60)
 
 #bothBif(10, 100, [3, 8], [3, 8])
 
