@@ -1,5 +1,5 @@
 import numpy as np
-from paramsAR import *
+# from paramsAR import *
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
 from scipy.integrate import solve_ivp
@@ -16,7 +16,7 @@ t= np.linspace(0,50,500)
 
 
 # sub_plots(t,y0)
-# ind_plots(t,y0)
+ind_plots(t,y0)
 # vec_field(y0, y_traj, t, 2, 1, ['Stop', 'Binge'], 'no')
 
-paramter_adj(y0,t,'no')
+# paramter_adj(y0,t,'no')
