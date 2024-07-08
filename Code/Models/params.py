@@ -1,5 +1,5 @@
 #INIT
-y0 = [0, .2, .2, 0.3, 0, 0]
+y0 = [0, .2, .2, 0.3, 0, 0, 0]
 
 #EXCITABILITIES
 Ebinge = 1
@@ -16,7 +16,7 @@ seekTAU = 1
 bingeTAU = 1
 stopTAU = 1
 nacTAU = 1
-dlsTAU = 1
+dlsTAU = .005
 
 #DRIVES
 seekDRIVE = 0
@@ -30,16 +30,17 @@ spTOseek = 10
 spTOstop = 1
 spDURATION = 1
 spTObin = 3
-seekTOnac = 3
-seekTObin = 3
+seekTOnac = 2
+seekTObin = 1
 seekTOseek = 1
 binTOnac = 3
 binTOstop = 1
 binTOdls = 2
-binTObin=.7
+binTObin=1
 stopTObin = 2.5
 vtaTOnac = 1
 vtaTOdls = 1
+vtaTObinge = 3
 apsTOseek = 1
 
 #NEGATIVE STIM
@@ -55,7 +56,7 @@ nsTObinge = 5
 #EXTRAS
 dlsWeight = .3
 TOLERANCE = 20
-daFACTOR = 0.1
+daFACTOR = 0.2
 decayFac = .001
 
 #import pythonizedModel
