@@ -1,11 +1,58 @@
 import numpy as np
-from paramsAR import *
+# from paramsAR import *
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
 from scipy.integrate import solve_ivp
 import matplotlib.animation as animation
 from matplotlib.animation import PillowWriter
 tfont = {'fontname':'Times New Roman'}
+
+#INIT
+y0 = [0, .2, .2, 0.3, 0, 0]
+
+#EXCITABILITIES
+Ebinge = 10.5
+Estop = 10.5
+Enac = 1.84
+Eaps = 1
+Edls = 1.84
+Eseek=1
+Esetp = 6
+Evta = 12
+
+#TIMESCALES
+seekTAU = 1
+bingeTAU = 1
+stopTAU = 1
+nacTAU = 1
+dlsTAU = 1
+
+#DRIVES
+seekDRIVE = 0.01
+bingeDRIVE = 0.5
+stopDRIVE = 0.5
+nacDRIVE = -1.4
+dlsDRIVE = -1
+
+#SYNAPTIC WEIGHTS
+spTOseek = 5
+spTOstop = 1
+seekTOnac = 10
+seekTObin = 3
+binTOnac = 1
+binTOstop = 1
+binTOdls = 2.5
+stopTObin = 2
+vtaTOnac = 1
+vtaTOdls = 1
+apsTOseek = 1
+
+#EXTRAS
+dlsWeight = .3
+TOLERANCE = 10
+daFACTOR = 0.1
+
+
 
 #Defining the Model
 def derModel(t, y):
@@ -30,7 +77,6 @@ def xppaut_model(t, y0):
 
     def model(t, y):
         seek, binge, stop, nac, dls, ALCOHOL = y
-
         setp = 1 - F(Esetp * (ALCOHOL - TOLERANCE))
         vta = F(Evta*(ALCOHOL - TOLERANCE*daFACTOR))
         aps = Eaps*((1-dlsWeight)*nac + dlsWeight*dls)/2
@@ -349,11 +395,13 @@ def vec_field(y0, y_traj,t, n, m, name, save):
 
 
 def paramter_adj(y0,t,save): 
-    param = np.linspace(1.5,3.5,10)
-    fig, axs = plt.subplots(2, 2, figsize=(10, 8))
+    param = np.linspace(10,30,100)
+    f, axs = plt.subplots(2, 2, figsize=(10, 8))
     def update(z):
-        binTOdls = param[z]
+        TOLERANCE = param[z]
         y= xppaut_model(t,y0)
+        
+        
         seek = y['Int'][0]
         binge = y['Int'][1]
         stop = y['Int'][2]
@@ -375,7 +423,7 @@ def paramter_adj(y0,t,save):
         axs[0,0].set_title('mPFC Activity', **tfont, fontweight = 'bold', fontsize='14')
         axs[0,0].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
         axs[0,0].set_xlabel('Time (min)',**tfont, fontsize='12')
-        axs[0,0].legend()
+        # axs[0,0].legend()
 
         axs[0,1].axvline(x=thresh, color = 'silver',linestyle='dashed')
         axs[0,1].plot(t, binge, label ='Binge', color = 'mediumseagreen')
@@ -383,7 +431,7 @@ def paramter_adj(y0,t,save):
         axs[0,1].set_title('Insular Activity',**tfont, fontweight = 'bold', fontsize='14')
         axs[0,1].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
         axs[0,1].set_xlabel('Time (min)',**tfont, fontsize='12')
-        axs[0,1].legend()
+        # axs[0,1].legend()
 
         axs[1,0].axvline(x=thresh, color = 'silver',linestyle='dashed')
         axs[1,0].plot(t, vta, label = 'DA', color = 'lightcoral')
@@ -392,7 +440,7 @@ def paramter_adj(y0,t,save):
         axs[1,0].set_title('Subcortical Nuclei Activity',**tfont, fontweight = 'bold', fontsize='14')
         axs[1,0].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
         axs[1,0].set_xlabel('Time (min)',**tfont, fontsize='12')
-        axs[1,0].legend()
+        # axs[1,0].legend()
 
         axs[1,1].axvline(x=thresh, color = 'silver',linestyle='dashed')
         axs[1,1].plot(t, alc, color = 'red')
@@ -400,14 +448,16 @@ def paramter_adj(y0,t,save):
         axs[1,1].set_ylabel('Volume (mL)',**tfont, fontsize='12')
         axs[1,1].set_xlabel('Time (min)',**tfont, fontsize='12')
         plt.subplots_adjust(wspace=0.2, hspace=0.3)
-        plt.show()
-
+     
         return axs
-    ani = animation.FuncAnimation(fig, update, frames=len(param), interval=1,repeat=False)
+
+    ani = animation.FuncAnimation(f, update, frames=len(param), interval=200,repeat=False)
     if save =='yes':
         writer = PillowWriter(fps=30)
         ani.save('/Users/amyrude/Downloads/phase_plane_animation_stable_null.gif', writer=writer)
     plt.show()
+
+
 
 
     
