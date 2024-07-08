@@ -86,7 +86,7 @@ def runGraphs(duration=50, end=0, frames=0, nsAnimation=False, save=False):
         nsLEVEL=0
     y = xppaut_model(t, y0=y0, nsLEVEL=nsLEVEL)
     ALCOHOL = y['Int'][3]
-    setp = (1/(decayFac * t+1))*F(Esetp * (TOLERANCE - ALCOHOL))
+    setp = np.exp(-decayFac*t)*F(Esetp * (TOLERANCE - ALCOHOL))
     ns = nsLEVEL*(F(Ens*(nsSTART-t))+F(Ens*(t-(nsSTART+nsDURATION)))-1)
     vta = F(Evta*(ALCOHOL - TOLERANCE*daFACTOR + ns))
     

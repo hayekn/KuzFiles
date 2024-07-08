@@ -56,7 +56,7 @@ nsTObinge = 5
 dlsWeight = .3
 TOLERANCE = 20
 daFACTOR = 0.1
-decayFac = .005
+decayFac = .001
 
 #import pythonizedModel
 #pythonizedModel
