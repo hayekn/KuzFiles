@@ -10,7 +10,7 @@ from SALib.analyze import fast
 from SALib.sample import fast_sampler
 import matplotlib.animation as animation
 
-#seek, binge, nac, ALCOHOL, aps, setp
+#seek, binge, nac, ALCOHOL, aps, setp, vta
 
 def F(x):
         return 1 / (1 + np.exp(x))
@@ -55,26 +55,23 @@ daFACTOR=daFACTOR
 ):
 
     def model(t, y):
-        seek, binge, nac, ALCOHOL, aps, setp= y
+        seek, binge, nac, ALCOHOL, aps, setp, vta = y
 
-        #setp = F(Esetp*((ALCOHOL - TOLERANCE)))+ F(Esetp*(TOLERANCE - ALCOHOL - spDURATION))-1 #SPECIFIED DURATION SETPOINT
-        noise = np.random.normal(0, .3)
+        #noise = np.random.normal(0,.3)
         noise = 0
 
         ns = nsLEVEL*(F(Ens*(nsSTART-t))+F(Ens*(t-nsSTART-nsDURATION))-1)
-        vta = F(Evta*(ALCOHOL - TOLERANCE*daFACTOR + nsTOvta*ns))
+        cs = 1 - np.heaviside(ALCOHOL - TOLERANCE*daFACTOR, 1)
         
+        dvta_dt = -vta + F(Evta*(-csTOvta*cs + nsTOvta*ns)) + noise
         dsetp_dt = -setp + np.exp(-decayFac*t)*F(Esetp * (TOLERANCE - ALCOHOL)) + noise
         daps_dt = -aps + F(-Eaps*nac) + noise
-        dseek_dt = (-seek + F(Eseek * (spTOseek * setp - apsTOseek * aps + nsTOseek * ns - seekTOseek * seek - seekDRIVE)) + noise) / seekTAU
-        dbinge_dt = (-binge + F(Ebinge * (-binTObin*binge - seekTObin * seek + spTObin * setp + nsTObinge * ns - vtaTObinge*vta - bingeDRIVE)) + noise) / bingeTAU
+        dseek_dt = (-seek + F(Eseek * (spTOseek * setp - apsTOseek * aps + nsTOseek * ns - seekTOseek * seek - csTOseek*cs - seekDRIVE)) + noise) / seekTAU
+        dbinge_dt = (-binge + F(Ebinge * (-binTObin*binge - seekTObin * seek + nsTObinge * ns - bingeDRIVE)) + noise) / bingeTAU
         dnac_dt = (-nac + F(Enac * (-vtaTOnac * vta - seekTOnac * seek - binTOnac * binge - nacDRIVE)) + noise) / nacTAU
         dALCOHOL_dt = nac
 
-        '''for d in [dsetp_dt, daps_dt, dseek_dt, dbinge_dt, dnac_dt]:
-            d = d + gaussian_noise'''
-
-        return [dseek_dt, dbinge_dt, dnac_dt, dALCOHOL_dt, daps_dt, dsetp_dt]
+        return [dseek_dt, dbinge_dt, dnac_dt, dALCOHOL_dt, daps_dt, dsetp_dt, dvta_dt]
 
     sol = solve_ivp(model, (0, t[-1]), y0, dense_output=True)
     y = sol.sol(t)
@@ -82,38 +79,35 @@ daFACTOR=daFACTOR
 
 
 def runGraphs(time=120, nsSTOP=50, nsDURATION=nsDURATION, frames=100, nsAnimation=False, save=False):
-    global fig, axs
     fig, axs = plt.subplots(2, 3, figsize=(10, 6))
-    global y0
-    y0 = [0, .2, 0.3, 0, 0, 0]
-    global t
+    y0 = [0, .2, 0.3, 0, 0, 0, 0]
     t = np.linspace(0, time, 300)
-    if nsAnimation:
-        y = xppaut_model(t, y0=y0, nsLEVEL=nsLEVEL)
-    else:
-        y = xppaut_model(t, y0=y0, nsLEVEL=0)
-    ALCOHOL = y['Int'][3]
-    #setp = np.exp(-decayFac*t)(-setp - F(Esetp * (TOLERANCE - ALCOHOL)))
-    ns = nsLEVEL*(F(Ens*(nsSTART-t))+F(Ens*(t-(nsSTART+nsDURATION)))-1)
-    vta = F(Evta*(ALCOHOL - TOLERANCE*daFACTOR + ns))
-    
-    #alcAx = fig.add_subplot(3, 1, 3)
-    #alc = alcAx.plot(t, ALCOHOL, label='Consumption')[0]
 
-    global seek
-    seek = axs[0, 0].plot(t, y['Int'][0], label="seek")[0]
+    if nsAnimation:
+        y = xppaut_model(t)
+        ns = nsLEVEL*(F(Ens*(nsSTART-t))+F(Ens*(t-(nsSTART+nsDURATION)))-1)
+    else:
+        y = xppaut_model(t, nsLEVEL=0)
+        ns = 0*(F(Ens*(nsSTART-t))+F(Ens*(t-(nsSTART+nsDURATION)))-1)
+
+    cs = 1 - np.heaviside(y['Int'][3] - TOLERANCE*daFACTOR, 1)
+    
     axs[0, 0].set_ylabel('Normalized Activity')
-    global bin
-    bin = axs[0, 1].plot(t, y['Int'][1], label="binge")[0]
-    global nac
-    nac = axs[0, 2].plot(t, y['Int'][2], label="nac")[0]
-    global sp
-    sp = axs[1, 0].plot(t, y['Int'][-1], label="setp")[0]
     axs[1, 0].set_ylabel('Normalized Activity')
-    global da
-    da = axs[1, 1].plot(t, vta, label="vta")[0]
-    global neg
-    neg = axs[1, 2].plot(t, ALCOHOL, label="ALCOHOL")[0] #ALC OR NEGSTIM, CHANGE MANUALLY
+
+    seek = axs[0, 0].plot(t, y['Int'][0], label="Seek", color = 'midnightblue')[0]
+    sp = axs[0, 0].plot(t, y['Int'][5], label="Setpoint", color = 'royalblue')[0]
+
+    bin = axs[0, 1].plot(t, y['Int'][1], label="binge", color = 'mediumseagreen')[0]
+
+    nac = axs[0, 2].plot(t, y['Int'][2], label="NAc", color = 'maroon')[0]
+
+    alc = axs[1, 0].plot(t, y['Int'][3], label='Alcohol Vol.', color = 'red')[0]
+
+    da = axs[1, 1].plot(t, y['Int'][6], label="VTA", color = 'lightcoral')[0]
+
+    neg = axs[1, 2].plot(t, ns, label="NS")[0] #ALC OR NEGSTIM OR HEAVISIDE, CHANGE MANUALLY
+    cond = axs[1, 2].plot(t, cs, label="CS")[0]
     
     for i in range(2):
          for j in range(3):
@@ -129,20 +123,20 @@ def runGraphs(time=120, nsSTOP=50, nsDURATION=nsDURATION, frames=100, nsAnimatio
     def negAnim(frame):
         newNS = nsSTOP*(frame/frames)
         newY = xppaut_model(t, y0=y0, nsSTART=newNS)
-        ALCOHOL = newY['Int'][3]
         
         ns = nsLEVEL*(F(Ens*(newNS-t))+F(Ens*(t-(newNS+nsDURATION)))-1)
-        #setp = (1/(decayFac * t+1))*F(Esetp * (TOLERANCE - ALCOHOL))
-        vta = F(Evta*(newY['Int'][3] - TOLERANCE*daFACTOR + ns))
-        
+        cs = 1 - np.heaviside(newY['Int'][3] - TOLERANCE*daFACTOR, 1)
+
         seek.set_data(t, newY['Int'][0])
         bin.set_data(t, newY['Int'][1])
         nac.set_data(t, newY['Int'][2])
-        sp.set_data(t, newY['Int'][-1])
-        da.set_data(t, vta)
-        neg.set_data(t, ALCOHOL) #ALC OR NEGSTIM, CHANGE MANUALLY
+        alc.set_data(t, newY['Int'][3])
+        sp.set_data(t, newY['Int'][5])
+        da.set_data(t, newY['Int'][6])
+        neg.set_data(t, ns)
+        cond.set_Data(t, cs)
 
-        return (seek, bin, nac, sp, da, neg)
+        return (seek, bin, nac, alc, sp, da, neg, cond)
     if nsAnimation:
         ani = animation.FuncAnimation(fig=fig, func=negAnim, frames=frames, interval=10)
         if save:
@@ -155,6 +149,7 @@ def runGraphs(time=120, nsSTOP=50, nsDURATION=nsDURATION, frames=100, nsAnimatio
         plt.savefig("newGraphs"+str(date.today()), dpi=350)
     plt.show()
     
+
 runGraphs(100)
 #runGraphs(nsAnimation=True)
 

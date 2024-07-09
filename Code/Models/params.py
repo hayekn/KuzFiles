@@ -20,7 +20,7 @@ dlsTAU = .005
 
 #DRIVES
 seekDRIVE = 0
-bingeDRIVE = 0
+bingeDRIVE = -2
 stopDRIVE = 0.5
 nacDRIVE = -1.4
 dlsDRIVE = -.8
@@ -58,6 +58,8 @@ dlsWeight = .3
 TOLERANCE = 20
 daFACTOR = 0.2
 decayFac = .001
+csTOvta = 1
+csTOseek = 2
 
 #import pythonizedModel
 #pythonizedModel
