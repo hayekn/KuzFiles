@@ -10,8 +10,8 @@ tfont = {'fontname':'Times New Roman'}
 
 
 #Specify IC and time step
-y0 = [0, 0, 0.1, 0.3, 0.3, 0, 0] #seek, setp, binge,  nac, av, ALCOHOL, vta
-y_traj = [0, 0, 0.1, 0.3, 0.3, 0,0] #seek, setp, binge, nac, av, ALCOHOL, vta; used in phase plane analysis
+y0 = [0, 0, 0.1, 0.2, 0.2, 0, 0] #seek, setp, binge,  nac, av, ALCOHOL, vta
+y_traj = [0, 0, 0.1, 0.2, 0.2, 0,0] #seek, setp, binge, nac, av, ALCOHOL, vta; used in phase plane analysis
 t= np.linspace(0,50,500)  
 
 ## Defining the Parameters
@@ -35,7 +35,7 @@ vtaTAU = 1
 #DRIVES
 seekDRIVE = 0.01
 bingeDRIVE = 1.4
-nacDRIVE = 1.4
+nacDRIVE = 1.6
 avDRIVE = 1.4
 vtaDRIVE = 1.4
 setpDRIVE = 0.5
@@ -267,5 +267,5 @@ def vector_field(y0, y_traj, t, n,m, name, save):
         ani.save('/Users/amyrude/Downloads/seek_binge_phaseplane.gif', writer=writer)
     plt.show()
 
-sub_plots(t, y0, 'yes')
+sub_plots(t, y0, 'no')
 vector_field(y0,y_traj, t, 0, 2, ['Seek', 'Binge'], 'no')
