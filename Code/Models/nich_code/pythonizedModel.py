@@ -1,5 +1,5 @@
 import numpy as np
-from params import *
+from Code.Models.nich_code.params import *
 import math
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
