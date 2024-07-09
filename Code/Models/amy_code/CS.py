@@ -55,7 +55,7 @@ csTOvta = 10
 TOLERANCE = 20
 csDUR = 3
 
-def F(x): #excitatory: + = excitatory, - = inhibitory
+def F(x): # + = excitatory, - = inhibitory
         return 1 / (1 + np.exp(-x))
 
 def binge_model(t, y0):
@@ -100,13 +100,13 @@ def binge_model_noise(t, y0): #This model adds noise; solely for the purpose of 
         CS = np.heaviside(csDUR-t,0.5) #Conditioned Stimulus
         
         CS = np.heaviside(csDUR-t,0.5) #Conditioned Stimulus
-        dseek_dt = (-seek + F(Eseek * (csTOseek * CS - spTOseek * setp + avTOseek * av + seekDRIVE))+ random.uniform(-0.75,0.75)) / seekTAU #Seek Activity
-        dsetp_dt = (-setp + F(Esetp * ((ALCOHOL - TOLERANCE)))+ random.uniform(-0.75,0.75)) / setpTAU  #Setpoint Activity       
-        dbinge_dt = (-binge + F(Ebinge * (seekTObin * seek - bingeDRIVE))+ random.uniform(-0.75,0.75)) / bingeTAU #Binge Activity
-        dnac_dt = (-nac + F(Enac * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge - nacDRIVE))+ random.uniform(-0.75,0.75)) / nacTAU #NAc Activity
-        dav_dt = (-av + F(Eav * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge - avDRIVE))+ random.uniform(-0.75,0.75)) / avTAU #Alcohol Variable
-        dALCOHOL_dt = nac+ random.uniform(-0.75,0.75) # Alcohol consumed 
-        dvta_dt = (-vta + F(Evta*(csTOvta * CS - vtaDRIVE))+ random.uniform(-0.75,0.75)) / vtaTAU #VTA activity
+        dseek_dt = (-seek + F(Eseek * (csTOseek * CS - spTOseek * setp + avTOseek * av + seekDRIVE))+ random.uniform(-0.95,0.95)) / seekTAU #Seek Activity
+        dsetp_dt = (-setp + F(Esetp * ((ALCOHOL - TOLERANCE)))+ random.uniform(-0.95,0.95)) / setpTAU  #Setpoint Activity       
+        dbinge_dt = (-binge + F(Ebinge * (seekTObin * seek - bingeDRIVE))+ random.uniform(-0.95,0.95)) / bingeTAU #Binge Activity
+        dnac_dt = (-nac + F(Enac * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge - nacDRIVE))+ random.uniform(-0.95,0.95)) / nacTAU #NAc Activity
+        dav_dt = (-av + F(Eav * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge - avDRIVE))+ random.uniform(-0.95,0.95)) / avTAU #Alcohol Variable
+        dALCOHOL_dt = nac+ random.uniform(-0.95,0.95) # Alcohol consumed 
+        dvta_dt = (-vta + F(Evta*(csTOvta * CS - vtaDRIVE))+ random.uniform(-0.95,0.95)) / vtaTAU #VTA activity
         
         return [dseek_dt, dsetp_dt, dbinge_dt, dnac_dt, dav_dt, dALCOHOL_dt, dvta_dt]
 
@@ -267,5 +267,5 @@ def vector_field(y0, y_traj, t, n,m, name, save):
         ani.save('/Users/amyrude/Downloads/seek_binge_phaseplane.gif', writer=writer)
     plt.show()
 
-sub_plots(t, y0, 'no')
+sub_plots(t, y0, 'yes')
 vector_field(y0,y_traj, t, 0, 2, ['Seek', 'Binge'], 'no')
