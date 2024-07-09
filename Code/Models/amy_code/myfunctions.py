@@ -8,48 +8,38 @@ from matplotlib.animation import PillowWriter
 tfont = {'fontname':'Times New Roman'}
 
 #INIT
-y0 = [0, .2, .2, 0.3, 0, 0]
 
 #EXCITABILITIES
-Ebinge = 10.5
-Estop = 10.5
+Ebinge = 8
 Enac = 1.84
+Eav = 1.84
 Eaps = 1
-Edls = 1.84
 Eseek=1
-Esetp = 6
+Esetp = 15
 Evta = 12
 
 #TIMESCALES
 seekTAU = 1
 bingeTAU = 1
-stopTAU = 1
 nacTAU = 1
-dlsTAU = 1
+avTAU =1
 
 #DRIVES
 seekDRIVE = 0.01
-bingeDRIVE = 0.5
-stopDRIVE = 0.5
+bingeDRIVE = -0.5
 nacDRIVE = -1.4
-dlsDRIVE = -1
+avDRIVE = -1.4
 
 #SYNAPTIC WEIGHTS
 spTOseek = 5
-spTOstop = 1
 seekTOnac = 10
 seekTObin = 3
 binTOnac = 1
-binTOstop = 1
-binTOdls = 2.5
-stopTObin = 2
 vtaTOnac = 1
-vtaTOdls = 1
 apsTOseek = 1
 
 #EXTRAS
-dlsWeight = .3
-TOLERANCE = 10
+TOLERANCE = 20
 daFACTOR = 0.1
 
 
@@ -76,35 +66,35 @@ def F(x):
 def xppaut_model(t, y0):
 
     def model(t, y):
-        seek, binge, stop, nac, dls, ALCOHOL = y
-        setp = 1 - F(Esetp * (ALCOHOL - TOLERANCE))
+        seek, setp, binge, nac, av, ALCOHOL, spike = y
+        
         vta = F(Evta*(ALCOHOL - TOLERANCE*daFACTOR))
-        aps = Eaps*((1-dlsWeight)*nac + dlsWeight*dls)/2
-
-        dseek_dt = (-seek + F(Eseek * (spTOseek * setp - apsTOseek * aps - seekDRIVE))) / seekTAU
-        dbinge_dt = (-binge + F(Ebinge * (stopTObin * stop - seekTObin * seek - bingeDRIVE))) / bingeTAU
-        dstop_dt = (-stop + F(Estop * (binTOstop * binge - spTOstop * setp - stopDRIVE))) / stopTAU
+        dsetp_dt = -setp + F(Esetp * (TOLERANCE - ALCOHOL))
+        dseek_dt = (-seek + F(Eseek * (spTOseek * setp - apsTOseek * av - seekDRIVE))) / seekTAU
+        dbinge_dt = (-binge + F(Ebinge * (- seekTObin * seek - bingeDRIVE))) / bingeTAU
         dnac_dt = (-nac + F(Enac * (-vtaTOnac * vta - seekTOnac * seek - binTOnac * binge - nacDRIVE))) / nacTAU
-        ddls_dt = (-dls + F(Edls * (-binTOdls * binge - vtaTOdls * vta - dlsDRIVE))) / dlsTAU
-        dALCOHOL_dt = ((1-dlsWeight)*nac + dlsWeight*dls)/2
-
-        return [dseek_dt, dbinge_dt, dstop_dt, dnac_dt, ddls_dt, dALCOHOL_dt]
+        dav_dt = (-av + F(Eav * (-vtaTOnac * vta - seekTOnac * seek - binTOnac * binge - avDRIVE))) / avTAU
+        dALCOHOL_dt = nac
+        dspike_dt = (-spike + F(10 * (((t-5)- 1 * seek +4)))) / bingeTAU
+        
+        return [dseek_dt, dsetp_dt, dbinge_dt, dnac_dt, dav_dt, dALCOHOL_dt, dspike_dt]
 
     sol = solve_ivp(model, (0, t[-1]), y0, dense_output=True)
     y = sol.sol(t)
-    return {'Int':y, 'Der':[model(t,y0) for t in t]}
+    insula = (y[2]+0.5*y[6])/1.4
+    return {'Int':y, 'Der':[model(t,y0) for t in t], 'Ins':insula}
 
 
 #Plotting the Data
 def sub_plots(t,y0):
     y= xppaut_model(t,y0)
     seek = y['Int'][0]
-    binge = y['Int'][1]
-    stop = y['Int'][2]
+    binge = y['Int'][2]
     nac = y['Int'][3]
-    dls = y['Int'][4]
     alc = y['Int'][5]
-    setp = 1-F(Esetp*(alc-TOLERANCE))
+    setp = y['Int'][1]
+    spike = y['Int'][6]
+    insula = y['Ins']
     vta = F(Evta*(alc - TOLERANCE*daFACTOR))
     for n in np.arange(len(alc)):
         if alc[n]>=TOLERANCE:
@@ -124,7 +114,9 @@ def sub_plots(t,y0):
 
     axs[0,1].axvline(x=thresh, color = 'silver',linestyle='dashed')
     axs[0,1].plot(t, binge, label ='Binge', color = 'mediumseagreen')
-    axs[0,1].plot(t, stop, label = 'Stop', color = 'darkgreen')
+    axs[0,1].plot(t, spike, label ='spike', color = 'darkgreen')
+    axs[0,1].plot(t, insula, label ='total', color = 'green')
+
     axs[0,1].set_title('Insular Activity',**tfont, fontweight = 'bold', fontsize='14')
     axs[0,1].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
     axs[0,1].set_xlabel('Time (min)',**tfont, fontsize='12')
@@ -133,7 +125,6 @@ def sub_plots(t,y0):
     axs[1,0].axvline(x=thresh, color = 'silver',linestyle='dashed')
     axs[1,0].plot(t, vta, label = 'DA', color = 'lightcoral')
     axs[1,0].plot(t,nac, label = 'NAc', color = 'maroon')
-    axs[1,0].plot(t,dls, label = 'DLS', color = 'crimson')
     axs[1,0].set_title('Subcortical Nuclei Activity',**tfont, fontweight = 'bold', fontsize='14')
     axs[1,0].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
     axs[1,0].set_xlabel('Time (min)',**tfont, fontsize='12')
