@@ -74,7 +74,7 @@ decayFac=decayFac
         dsetp_dt = -setp + np.exp(-decayFac*t)*F(Esetp * (TOLERANCE - ALCOHOL)) / setpTAU + noise
         daps_dt = -aps + F(-Eaps*nac) + noise
         dseek_dt = (-seek + F(Eseek * (spTOseek * setp - apsTOseek * aps + nsTOseek * ns - csTOseek*cs - seekDRIVE)) + noise) / seekTAU
-        dbinge_dt = (-binge + F(Ebinge * (-seekTObin * seek + nsTObin * ns - bingeDRIVE)) + noise) / bingeTAU
+        dbinge_dt = (-binge + F(Ebinge * (- seekTObin * seek + nsTObin * ns - bingeDRIVE)) + noise) / bingeTAU
         dnac_dt = (-nac + F(Enac * (-vtaTOnac * vta - seekTOnac * seek - binTOnac * binge - nacDRIVE)) + noise) / nacTAU
         dALCOHOL_dt = nac
 
@@ -151,6 +151,6 @@ def runGraphs(time=120, nsSTOP=40, nsDURATION=nsDURATION, frames=100, fuzz=False
         plt.savefig("newGraphs"+str(date.today()), dpi=350)
     plt.show()
     
-runGraphs(75)
+#runGraphs(75)
 #runGraphs(75,fuzz=True,  nsAnimation=True)
 
