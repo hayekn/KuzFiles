@@ -19,9 +19,8 @@ t= np.linspace(0,50,500)
 Ebinge = 8
 Enac = 1.84
 Eav = 1.84
-Eav = 1
-Eseek=1
-Esetp = 15
+Eseek= 0.8
+Esetp = 5
 Evta = 12
 
 #TIMESCALES
@@ -34,7 +33,7 @@ vtaTAU = 1
 
 #DRIVES
 seekDRIVE = 0.01
-bingeDRIVE = 1.4
+bingeDRIVE = 1.2
 nacDRIVE = 1.6
 avDRIVE = 1.4
 vtaDRIVE = 1.4
@@ -48,12 +47,13 @@ binTOnac = 1
 vtaTOnac = 1
 avTOseek = 1
 vtaTObin = 10
-csTOseek = 10
-csTOvta = 10
+csTOseek = 1.5
+csTOvta = 3
 
 #EXTRAS
 TOLERANCE = 20
 csDUR = 3
+decayFac = 0.001
 
 def F(x): # + = excitatory, - = inhibitory
         return 1 / (1 + np.exp(-x))
@@ -64,10 +64,10 @@ def binge_model(t, y0):
         
         CS = np.heaviside(csDUR-t,0.5) #Conditioned Stimulus
         dseek_dt = (-seek + F(Eseek * (csTOseek * CS - spTOseek * setp + avTOseek * av + seekDRIVE))) / seekTAU #Seek Activity
-        dsetp_dt = (-setp + F(Esetp * ((ALCOHOL - TOLERANCE)))) / setpTAU  #Setpoint Activity       
+        dsetp_dt = (-setp + np.exp(-decayFac*t) * F(Esetp * ((ALCOHOL - TOLERANCE)))) / setpTAU  #Setpoint Activity       
         dbinge_dt = (-binge + F(Ebinge * (seekTObin * seek - bingeDRIVE))) / bingeTAU #Binge Activity
         dnac_dt = (-nac + F(Enac * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge - nacDRIVE))) / nacTAU #NAc Activity
-        dav_dt = (-av + F(Eav * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge - avDRIVE))) / avTAU #Alcohol Variable
+        dav_dt = (-av + F(Eav *nac - avDRIVE)) / avTAU #Alcohol Variable
         dALCOHOL_dt = nac # Alcohol consumed 
         dvta_dt = (-vta + F(Evta*(csTOvta * CS - vtaDRIVE))) / vtaTAU #VTA activity
         
