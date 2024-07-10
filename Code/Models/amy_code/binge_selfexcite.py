@@ -16,7 +16,7 @@ t= np.linspace(0,50,500)
 
 ## Defining the Parameters
 #EXCITABILITIES
-Ebinge = 8
+Ebinge = 1.45
 Enac = 1.84
 Eav = 1.84
 Eseek= 0.8
@@ -32,8 +32,8 @@ setpTAU = 1
 vtaTAU = 1
 
 #DRIVES
-seekDRIVE = 0.01
-bingeDRIVE = 1.2
+seekDRIVE = -0.3
+bingeDRIVE = 2.4
 nacDRIVE = 1.6
 avDRIVE = 1.4
 vtaDRIVE = 1.4
@@ -41,19 +41,22 @@ setpDRIVE = 0.5
 
 #SYNAPTIC WEIGHTS
 spTOseek = 5
-seekTOnac = 10
-seekTObin = 2.1
+seekTOnac = 5
+seekTObin = 2
 binTOnac = 1
 vtaTOnac = 1
-avTOseek = 1
+avTOseek = 3
 vtaTObin = 10
-csTOseek = 1.5
+csTOseek = 6
 csTOvta = 3
+binTOseek = 3
 
 #EXTRAS
 TOLERANCE = 20
 csDUR = 3
 decayFac = 0.001
+seekSELF = 1
+bingeSELF = 0.8
 
 def F(x): # + = excitatory, - = inhibitory
         return 1 / (1 + np.exp(-x))
@@ -63,9 +66,9 @@ def binge_model(t, y0):
         seek, setp, binge, nac, av, ALCOHOL, vta = y
         
         CS = np.heaviside(csDUR-t,0.5) #Conditioned Stimulus
-        dseek_dt = (-seek + F(Eseek * (csTOseek * CS - spTOseek * setp + avTOseek * av + seekDRIVE))) / seekTAU #Seek Activity
+        dseek_dt = (-seek + F(Eseek * (csTOseek * CS - spTOseek * setp + avTOseek * av - seekDRIVE))) / seekTAU #Seek Activity
         dsetp_dt = (-setp + np.exp(-decayFac*t) * F(Esetp * ((ALCOHOL - TOLERANCE)))) / setpTAU  #Setpoint Activity       
-        dbinge_dt = (-binge + F(Ebinge * (seekTObin * seek - bingeDRIVE))) / bingeTAU #Binge Activity
+        dbinge_dt = (-binge + F(Ebinge * (bingeSELF * binge + seekTObin * seek - bingeDRIVE))) / bingeTAU #Binge Activity
         dnac_dt = (-nac + F(Enac * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge - nacDRIVE))) / nacTAU #NAc Activity
         dav_dt = (-av + F(Eav * nac - avDRIVE)) / avTAU #Alcohol Variable
         dALCOHOL_dt = nac # Alcohol consumed 
@@ -83,9 +86,9 @@ def der_model(t, y): #This model is also defined separately, just for convenienc
         seek, setp, binge, nac, av, ALCOHOL, vta = y
         
         CS = np.heaviside(csDUR-t,0.5) #Conditioned Stimulus
-        dseek_dt = (-seek + F(Eseek * (csTOseek * CS - spTOseek * setp + avTOseek * av + seekDRIVE))) / seekTAU #Seek Activity
+        dseek_dt = (-seek + F(Eseek * (csTOseek * CS - spTOseek * setp + avTOseek * av - seekDRIVE))) / seekTAU #Seek Activity
         dsetp_dt = (-setp + F(Esetp * ((ALCOHOL - TOLERANCE)))) / setpTAU  #Setpoint Activity       
-        dbinge_dt = (-binge + F(Ebinge * (seekTObin * seek - bingeDRIVE))) / bingeTAU #Binge Activity
+        dbinge_dt = (-binge + F(Ebinge * (bingeSELF * binge + seekTObin * seek - bingeDRIVE))) / bingeTAU #Binge Activity
         dnac_dt = (-nac + F(Enac * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge - nacDRIVE))) / nacTAU #NAc Activity
         dav_dt = (-av + F(Eav * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge - avDRIVE))) / avTAU #Alcohol Variable
         dALCOHOL_dt = nac # Alcohol consumed 
@@ -100,9 +103,9 @@ def binge_model_noise(t, y0): #This model adds noise; solely for the purpose of 
         CS = np.heaviside(csDUR-t,0.5) #Conditioned Stimulus
         
         CS = np.heaviside(csDUR-t,0.5) #Conditioned Stimulus
-        dseek_dt = (-seek + F(Eseek * (csTOseek * CS - spTOseek * setp + avTOseek * av + seekDRIVE))+ random.uniform(-0.95,0.95)) / seekTAU #Seek Activity
+        dseek_dt = (-seek + F(Eseek * (csTOseek * CS - spTOseek * setp + avTOseek * av - seekDRIVE))+ random.uniform(-0.95,0.95)) / seekTAU #Seek Activity
         dsetp_dt = (-setp + F(Esetp * ((ALCOHOL - TOLERANCE)))+ random.uniform(-0.95,0.95)) / setpTAU  #Setpoint Activity       
-        dbinge_dt = (-binge + F(Ebinge * (seekTObin * seek - bingeDRIVE))+ random.uniform(-0.95,0.95)) / bingeTAU #Binge Activity
+        dbinge_dt = (-binge + F(Ebinge * (bingeSELF * binge + seekTObin * seek - bingeDRIVE))+ random.uniform(-0.95,0.95)) / bingeTAU #Binge Activity
         dnac_dt = (-nac + F(Enac * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge - nacDRIVE))+ random.uniform(-0.95,0.95)) / nacTAU #NAc Activity
         dav_dt = (-av + F(Eav * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge - avDRIVE))+ random.uniform(-0.95,0.95)) / avTAU #Alcohol Variable
         dALCOHOL_dt = nac+ random.uniform(-0.95,0.95) # Alcohol consumed 
@@ -230,9 +233,9 @@ def vector_field(y0, y_traj, t, n,m, name, save):
             y0[m] = x2list_fine[i]
             #Solving for the nullclines at each time step
             CS = np.heaviside(csDUR-t,0.5)[z] #Conditioned Stimulus
-            nullcline[0,i] = (F(Eseek * (- spTOseek * y0[1] + avTOseek * y0[4] + seekDRIVE))) / seekTAU #Seek Activity
+            nullcline[0,i] = (F(Eseek * (csTOseek * CS - spTOseek * y0[1] + avTOseek * y0[4] - seekDRIVE))) / seekTAU #Seek Activity
             nullcline[1,i] = (F(Esetp * ((y0[5]- TOLERANCE)))) / setpTAU  #Setpoint Activity       
-            nullcline[2,i] = (F(Ebinge * (seekTObin * y0[0] - bingeDRIVE))) / bingeTAU #Binge Activity
+            nullcline[2,i] = (F(Ebinge * (bingeSELF * y0[2] + seekTObin * y0[0] - bingeDRIVE))) / bingeTAU #Binge Activity
             nullcline[3,i] = (F(Enac * (vtaTOnac * y0[6] + seekTOnac * y0[0] + binTOnac * y0[2] - nacDRIVE))) / nacTAU #NAc Activity
             nullcline[4,i] = (F(Eav * (vtaTOnac * y0[6] + seekTOnac * y0[0] + binTOnac * y0[2] - avDRIVE))) / avTAU #Alcohol Variable
             nullcline[5,i] = y0[3] # Alcohol consumed 
@@ -268,4 +271,4 @@ def vector_field(y0, y_traj, t, n,m, name, save):
     plt.show()
 
 sub_plots(t, y0, 'no')
-vector_field(y0,y_traj, t, 0, 2, ['Seek', 'Binge'], 'no')
+# vector_field(y0,y_traj, t, 0, 2, ['Seek', 'Binge'], 'no')

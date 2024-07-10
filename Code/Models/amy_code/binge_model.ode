@@ -12,7 +12,7 @@ par seekTAU = 1, bingeTAU = 1, nacTAU = 1, avTAU =1, setpTAU = 1, vtaTAU = 1
 par seekDRIVE = 0.01, bingeDRIVE = 1.2, nacDRIVE = 1.6, avDRIVE = 1.4, vtaDRIVE = 1.4, setpDRIVE = 0.5, avDRIVE = 1.4
 
 #Synaptic Weights
-par spTOseek = 5, seekTOnac = 10, seekTObin = 2.1, binTOnac = 1, vtaTOnac = 1, avTOseek = 1, vtaTObin = 10, csTOseek = 1.5, csTOvta = 3
+par spTOseek = 5, seekTOnac = 10, seekTObin = 2.1, binTOnac = 1, vtaTOnac = 1, avTOseek = 1, vtaTObin = 10, csTOseek = 1.5, csTOvta = 3, binTOseek=2.1
 
 #Extras
 par TOLERANCE = 20, csDUR = 3, decayFac = 0.001
@@ -20,7 +20,7 @@ par TOLERANCE = 20, csDUR = 3, decayFac = 0.001
 F(x) = 1/(1 + exp(-x))
 
 CS = heav(csDUR-t) 
-dseek/dt = (-seek + F(Eseek * (csTOseek * CS - spTOseek * setp + avTOseek * av + seekDRIVE))) / seekTAU 
+dseek/dt = (-seek + F(Eseek * (binTOseek * binge + csTOseek * CS - spTOseek * setp + avTOseek * av + seekDRIVE))) / seekTAU 
 dsetp/dt = (-setp + exp(-decayFac*t) * F(Esetp * ((ALCOHOL - TOLERANCE)))) / setpTAU       
 dbinge/dt = (-binge + F(Ebinge * (seekTObin * seek - bingeDRIVE))) / bingeTAU 
 dnac/dt = (-nac + F(Enac * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge - nacDRIVE))) / nacTAU 
