@@ -1,0 +1,35 @@
+init seek=0, setp=0, binge = 0.1, nac = 0.2, av = 0.2, ALCOHOL = 0, vta = 0
+
+#KEY: setp = setpoint, nac = nucleus accumbens, av = alcohol variable, ALCOHOL = consumed volume, vta = ventral tegmental area
+
+#Excitabilities
+par Ebinge = 8, Enac = 1.84, Eav = 1.84, Eseek= 0.8, Esetp = 5, Evta = 12
+
+#Timescales
+par seekTAU = 1, bingeTAU = 1, nacTAU = 1, avTAU =1, setpTAU = 1, vtaTAU = 1
+
+#Drive
+par seekDRIVE = 0.01, bingeDRIVE = 1.2, nacDRIVE = 1.6, avDRIVE = 1.4, vtaDRIVE = 1.4, setpDRIVE = 0.5, avDRIVE = 1.4
+
+#Synaptic Weights
+par spTOseek = 5, seekTOnac = 10, seekTObin = 2.1, binTOnac = 1, vtaTOnac = 1, avTOseek = 1, vtaTObin = 10, csTOseek = 1.5, csTOvta = 3
+
+#Extras
+par TOLERANCE = 20, csDUR = 3, decayFac = 0.001
+
+F(x) = 1/(1 + exp(-x))
+
+CS = heav(csDUR-t) 
+dseek/dt = (-seek + F(Eseek * (csTOseek * CS - spTOseek * setp + avTOseek * av + seekDRIVE))) / seekTAU 
+dsetp/dt = (-setp + exp(-decayFac*t) * F(Esetp * ((ALCOHOL - TOLERANCE)))) / setpTAU       
+dbinge/dt = (-binge + F(Ebinge * (seekTObin * seek - bingeDRIVE))) / bingeTAU 
+dnac/dt = (-nac + F(Enac * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge - nacDRIVE))) / nacTAU 
+dav/dt = (-av + F(Eav * nac- avDRIVE)) / avTAU 
+dALCOHOL/dt = nac 
+dvta/dt = (-vta + F(Evta*(csTOvta * CS - vtaDRIVE))) / vtaTAU 
+
+@ total=50, NPLOT=4, YP1=binge, YP2=seek, YP3=nac, YP4=setp
+
+@ xlo=0, xhi=20, ylo=0, yhi=1
+
+done
