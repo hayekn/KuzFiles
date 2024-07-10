@@ -67,7 +67,7 @@ def xppaut_model(t, fuzz, nsLEVEL=nsLEVEL,
     y = sol.sol(t)
     return {'Int':y, 'Der':[model(t,y0) for t in t]}
 
-def runGraphs(time=120, slide=1, quick=1, fuzz=False, save=False, show=False):
+def runGraphs(time=120, slide=1, quick=1, decay=1, fuzz=False, save=False, show=False):
     fig, axs = plt.subplots(2, 3, figsize=(11, 7))
     t = np.linspace(0, time, 300)
     y = xppaut_model(t, fuzz, nsLEVEL=0)
@@ -90,9 +90,14 @@ def runGraphs(time=120, slide=1, quick=1, fuzz=False, save=False, show=False):
             SD2=SD2*math.exp(-rewardError*quick)
             print("yes")
         else:
-            ND1=ND1*math.exp(-rewardError*quick)
-            ND2=ND2*math.exp(rewardError*quick)
+            ND1=ND1*math.exp(rewardError*quick)
+            ND2=ND2*math.exp(-rewardError*quick)
             print("no")
+
+        SD1 = SD1*math.exp((1-SD1)*decay)
+        SD2 = SD2*math.exp((1-SD2)*decay)
+        ND1 = ND1*math.exp((1-ND1)*decay)
+        ND2 = ND2*math.exp((1-ND2)*decay)
             
     print(ND1, ND2, SD1, SD2)
 
@@ -127,5 +132,5 @@ def runGraphs(time=120, slide=1, quick=1, fuzz=False, save=False, show=False):
     else:
         plt.show()
     
-runGraphs(time=75, slide=100, quick=1)
+runGraphs(time=75, slide=100, quick=1, decay=.01)
 
