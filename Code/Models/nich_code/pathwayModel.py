@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
 from scipy.integrate import odeint
 from scipy.integrate import solve_ivp
-from SALib.analyze import fast
-from SALib.sample import fast_sampler
+# from SALib.analyze import fast
+# from SALib.sample import fast_sampler
 import matplotlib.animation as animation
 
 #seek, nseek, seekD1, seekD2, nseekD1, nseekD2, 

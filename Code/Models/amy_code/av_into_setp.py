@@ -18,7 +18,7 @@ t= np.linspace(0,50,500)
 #EXCITABILITIES
 Ebinge = 8
 Enac = 1.84
-Eav = 1.84
+Eav = 1
 Eseek= 0.8
 Esetp = 5
 Evta = 12
@@ -27,7 +27,7 @@ Evta = 12
 seekTAU = 1
 bingeTAU = 1
 nacTAU = 1
-avTAU = 1 
+avTAU = 60
 setpTAU = 1
 vtaTAU = 1
 
@@ -37,7 +37,7 @@ bingeDRIVE = 1.2
 nacDRIVE = 1.6
 avDRIVE = 1.4
 vtaDRIVE = 1.4
-setpDRIVE = 0.5
+setpDRIVE = 0.35
 
 #SYNAPTIC WEIGHTS
 spTOseek = 5
@@ -64,7 +64,7 @@ def binge_model(t, y0):
         
         CS = np.heaviside(csDUR-t,0.5) #Conditioned Stimulus
         dseek_dt = (-seek + F(Eseek * (csTOseek * CS - spTOseek * setp + avTOseek * av + seekDRIVE))) / seekTAU #Seek Activity
-        dsetp_dt = (-setp + np.exp(-decayFac*t) * F(Esetp * ((ALCOHOL - TOLERANCE)))) / setpTAU  #Setpoint Activity       
+        dsetp_dt = (-setp + np.exp(-decayFac*t) * F(Esetp * (av - setpDRIVE))) / setpTAU  #Setpoint Activity       
         dbinge_dt = (-binge + F(Ebinge * (seekTObin * seek - bingeDRIVE))) / bingeTAU #Binge Activity
         dnac_dt = (-nac + F(Enac * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge - nacDRIVE))) / nacTAU #NAc Activity
         dav_dt = (-av + F(Eav * nac - avDRIVE)) / avTAU #Alcohol Variable
@@ -129,14 +129,14 @@ def sub_plots(t,y0,noise):
     alc = y['Int'][5]
     vta = y['Int'][6]
     CS = y['CS']
-    for n in np.arange(len(alc)):
-        if alc[n]>=TOLERANCE:
-            thresh = t[n] #time at which threshold is reached 
-            index = n #index of when threshold is reached
-            break
+    # for n in np.arange(len(alc)):
+    #     if alc[n]>=TOLERANCE:
+    #         thresh = t[n] #time at which threshold is reached 
+    #         index = n #index of when threshold is reached
+    #         break
     f, axs = plt.subplots(2, 3, figsize=(12, 8))
 
-    axs[0,0].axvline(x=thresh, color = 'silver',linestyle='dashed')
+    # axs[0,0].axvline(x=thresh, color = 'silver',linestyle='dashed')
     axs[0,0].plot(t, seek+setp, label = 'Combined', color = 'lightsteelblue')
     axs[0,0].plot(t, seek, label = 'Seek', color = 'midnightblue')
     axs[0,0].plot(t, setp, label = 'Setpoint', color = 'royalblue')
@@ -145,28 +145,28 @@ def sub_plots(t,y0,noise):
     axs[0,0].set_xlabel('Time (min)',**tfont, fontsize='12')
     axs[0,0].legend()
 
-    axs[0,1].axvline(x=thresh, color = 'silver',linestyle='dashed')
+    # axs[0,1].axvline(x=thresh, color = 'silver',linestyle='dashed')
     axs[0,1].plot(t,binge, label ='Binge', color = 'mediumseagreen')
     axs[0,1].set_title('Insular Activity',**tfont, fontweight = 'bold', fontsize='14')
     axs[0,1].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
     axs[0,1].set_xlabel('Time (min)',**tfont, fontsize='12')
     axs[0,1].legend()
 
-    axs[0,2].axvline(x=thresh, color = 'silver',linestyle='dashed')
+    # axs[0,2].axvline(x=thresh, color = 'silver',linestyle='dashed')
     axs[0,2].plot(t,nac, label = 'NAc', color = 'maroon')
     axs[0,2].set_title('NAc Activity',**tfont, fontweight = 'bold', fontsize='14')
     axs[0,2].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
     axs[0,2].set_xlabel('Time (min)',**tfont, fontsize='12')
     axs[0,2].legend()
 
-    axs[1,0].axvline(x=thresh, color = 'silver',linestyle='dashed')
+    # axs[1,0].axvline(x=thresh, color = 'silver',linestyle='dashed')
     axs[1,0].plot(t, vta, label = 'DA', color = 'firebrick')
     axs[1,0].set_title('VTA Activity',**tfont, fontweight = 'bold', fontsize='14')
     axs[1,0].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
     axs[1,0].set_xlabel('Time (min)',**tfont, fontsize='12')
     axs[1,0].legend()
 
-    axs[1,1].axvline(x=thresh, color = 'silver',linestyle='dashed')
+    # axs[1,1].axvline(x=thresh, color = 'silver',linestyle='dashed')
     axs[1,1].plot(t, CS, color = 'peru', label = 'CS')
     axs[1,1].plot(t, av, color = 'sienna', label = 'AV')
     axs[1,1].set_title('Conditioned Stimulus and Alc Var',**tfont, fontweight = 'bold', fontsize='14')
@@ -174,7 +174,7 @@ def sub_plots(t,y0,noise):
     axs[1,1].set_xlabel('Time (min)',**tfont, fontsize='12')
     axs[1,1].legend()
 
-    axs[1,2].axvline(x=thresh, color = 'silver',linestyle='dashed')
+    # axs[1,2].axvline(x=thresh, color = 'silver',linestyle='dashed')
     axs[1,2].plot(t, alc, color = 'red')
     axs[1,2].set_title('Alcohol Consumed',**tfont, fontweight = 'bold', fontsize='14')
     axs[1,2].set_ylabel('Volume (mL)',**tfont, fontsize='12')
@@ -268,4 +268,4 @@ def vector_field(y0, y_traj, t, n,m, name, save):
     plt.show()
 
 sub_plots(t, y0, 'no')
-vector_field(y0,y_traj, t, 0, 2, ['Seek', 'Binge'], 'no')
+# vector_field(y0,y_traj, t, 0, 2, ['Seek', 'Binge'], 'no')
