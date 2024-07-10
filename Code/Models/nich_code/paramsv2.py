@@ -14,6 +14,7 @@ Evta = 1
 seekTAU = 1
 bingeTAU = 1
 nacTAU = 1
+setpTAU = 1
 
 #DRIVES
 seekDRIVE = 0
