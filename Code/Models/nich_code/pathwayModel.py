@@ -71,7 +71,7 @@ def runGraphs(time=120, slide=1, quick=1, decay=1, fuzz=False, save=False, show=
     fig, axs = plt.subplots(2, 3, figsize=(11, 7))
     t = np.linspace(0, time, 300)
     y = xppaut_model(t, fuzz, nsLEVEL=0)
-    expectedReward = 0
+    expectedReward = 30
 
     SD1=seekTOseekD1
     SD2=seekTOseekD2
@@ -93,7 +93,7 @@ def runGraphs(time=120, slide=1, quick=1, decay=1, fuzz=False, save=False, show=
             ND1=ND1*math.exp(rewardError*quick)
             ND2=ND2*math.exp(-rewardError*quick)
             print("no")
-
+        print(rewardError)
         SD1 = SD1*math.exp((1-SD1)*decay)
         SD2 = SD2*math.exp((1-SD2)*decay)
         ND1 = ND1*math.exp((1-ND1)*decay)
