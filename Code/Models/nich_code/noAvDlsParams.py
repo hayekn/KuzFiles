@@ -1,15 +1,12 @@
 #setp, seek, binge, nac, vta, av, ALCOHOL
 
-y0 = [0, .5, .1, 0.2, 0, 0, 0]
-
 #EXCITABILITIES
 
-Ebinge = 1
-Enac = 1.84
+Ebinge = 2
+#Enac = .8
 #eav = 1.84
-Eav = 1
 Eseek = 2
-Esetp = 5
+Esetp = 1.84
 Evta = 12
 Edls = 2
 
@@ -17,35 +14,32 @@ Edls = 2
 seekTAU = 1
 bingeTAU = .5
 nacTAU = 1
-setpTAU = 1
+setpTAU = 25
 vtaTAU = 1
-avTAU = 20
 dlsTAU = 1
 
 #DRIVES
 seekDRIVE = 0
-bingeDRIVE = -1.4
-nacDRIVE = -1.2
+bingeDRIVE = -1
+nacDRIVE = -4
 vtaDRIVE = -1.4
-setpDRIVE = 0
-avDRIVE = -1.4
-dlsDRIVE = -5
+setpDRIVE = -1
+dlsDRIVE = -1.5
 
 #SYNAPTIC WEIGHTS
 #spTOseek = 5
-spTOseek = 5
-seekTOnac = 10
-seekTObin = 3
-seekTOseek = 4.2
+spTOseek = 10
+seekTOnac = 4
+seekTObin = 2.5
+seekTOseek = 4
 seekTOdls = 3
 binTOnac = 1
-binTObin = 0
-avTOseek = 0
-avTOsetp = .2
+binTOseek = 2.5
 csTOvta = 3
 #cstoseek = 6
-csTOseek = 3
-nacTOav = 1
+csTOdls = 1
+csTOseek = 4
+nacTOsetp = .5 #BINGE TIME
 vtaTOnac = 1
 dlsTOdls = 1
 
