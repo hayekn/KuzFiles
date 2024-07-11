@@ -43,7 +43,7 @@ def xppaut_model(t, fuzz, nsLEVEL=nsLEVEL):
     return {'Int':y, 'Der':[model(t,y0) for t in t]}
 
 def runGraphs(time=120, fuzz=False, save=False):
-    fig, axs = plt.subplots(2, 3, figsize=(11, 7))
+    fig, axs = plt.subplots(2, 3, figsize=(11, 8))
     t = np.linspace(0, time, 300)
     y = xppaut_model(t, fuzz, nsLEVEL=0)
     
@@ -52,31 +52,39 @@ def runGraphs(time=120, fuzz=False, save=False):
 
     sp = axs[0, 0].plot(t, y['Int'][0], label="Setpoint", color = 'royalblue')[0]
     seek = axs[0, 0].plot(t, y['Int'][1], label="Seek", color = 'midnightblue')[0]
-    bin = axs[0, 1].plot(t, y['Int'][2], label="binge", color = 'mediumseagreen')[0]
+    comb = axs[0, 0].plot(t, (y['Int'][0]+y['Int'][1])/2, '--', label="Combined", color = 'lightblue')[0]
+    axs[0,0].set_title("mPFC")
+    bin = axs[0, 1].plot(t, y['Int'][2], label="Binge", color = 'mediumseagreen')[0]
+    axs[0,1].set_title("Insula")
     nac = axs[0, 2].plot(t, y['Int'][3], label="NAc", color = 'maroon')[0]
-    da = axs[1, 1].plot(t, y['Int'][4], label="VTA", color = 'lightcoral')[0]
     av = axs[0, 2].plot(t, y['Int'][5], '--', label='AV',color='maroon')[0]
+    axs[0, 2].set_title("\"Effort\"")
+    da = axs[1, 1].plot(t, y['Int'][4], label="VTA", color = 'lightcoral')[0]
+    axs[1,1].set_title("DA")
     alc = axs[1, 0].plot(t, y['Int'][6], label='Alcohol Vol.', color = 'red')[0]
     neg = axs[1, 2].plot(t, ns, label="NS")[0] #ALC OR NEGSTIM OR HEAVISIDE, CHANGE MANUALLY
     cond = axs[1, 2].plot(t, cs, label="CS")[0]
+    axs[1,2].set_title("Conditioned/Negative Stimulus")
 
     #Plot formatting
     for i in range(2):
          for j in range(3):
               if i==1 and j==0:
                   continue
-              axs[i, j].set_xlabel('T')
               axs[i, j].legend()
               axs[i, j].set_ylim(0, 1)
-    axs[1, 0].set_xlabel('T')
+    axs[1, 0].set_xlabel('T (min)')
+    axs[1, 1].set_xlabel('T (min)')
+    axs[1, 2].set_xlabel('T (min)')
     axs[1, 0].legend()
     axs[0, 0].set_ylabel('Normalized Activity')
-    axs[1, 0].set_ylabel('Normalized Activity')
 
-    if save:
+    if save and fuzz:
+        plt.savefig("newFuzzyGraphs"+str(date.today()), dpi=350)
+    elif not fuzz:
         plt.savefig("newGraphs"+str(date.today()), dpi=350)
     else:
         plt.show()
     
-runGraphs(75)
+runGraphs(100, fuzz=True, save=True)
 
