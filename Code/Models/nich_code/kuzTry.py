@@ -28,7 +28,7 @@ def xppaut_model(t, fuzz, nsLEVEL=nsLEVEL):
         cs = np.heaviside(csDUR-t, 1)
 
         dsetp_dt = (-setp + np.exp(-decayFac*t)*F(Esetp * (avTOsetp * av + setpDRIVE)) + noise) / setpTAU
-        dseek_dt = (-seek + F(Eseek * (-spTOseek * setp + avTOseek * av - nsTOseek * ns + csTOseek * cs + seekTOseek * seek + seekDRIVE)) + noise) / seekTAU
+        dseek_dt = (-seek + F(Eseek * (-spTOseek * av + avTOseek * av - nsTOseek * ns + csTOseek * cs + seekTOseek * seek + seekDRIVE)) + noise) / seekTAU
         dbinge_dt = (-binge + F(Ebinge * (seekTObin * seek - nsTObin * ns + binTObin * binge + bingeDRIVE)) + noise) / bingeTAU
         dnac_dt = (-nac + F(Enac * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge + nacDRIVE)) + noise) / nacTAU
         
@@ -81,10 +81,10 @@ def runGraphs(time=120, fuzz=False, save=False):
 
     if save and fuzz:
         plt.savefig("newFuzzyGraphs"+str(date.today()), dpi=350)
-    elif not fuzz:
+    elif save and not fuzz:
         plt.savefig("newGraphs"+str(date.today()), dpi=350)
     else:
         plt.show()
     
-runGraphs(100, fuzz=True, save=True)
+runGraphs(100)
 

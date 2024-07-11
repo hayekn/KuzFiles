@@ -6,7 +6,8 @@ y0 = [0, .5, .1, 0.2, 0, 0, 0]
 
 Ebinge = 1
 Enac = 1.84
-Eav = 1.84
+#eav = 1.84
+Eav = 1
 Eseek = 2
 Esetp = 5
 Evta = 12
@@ -28,7 +29,8 @@ setpDRIVE = 0
 avDRIVE = -1.4
 
 #SYNAPTIC WEIGHTS
-spTOseek = 5
+#spTOseek = 5
+spTOseek = 8
 seekTOnac = 10
 seekTObin = 3
 seekTOseek = 4.2
@@ -37,7 +39,8 @@ binTObin = 0
 avTOseek = 0
 avTOsetp = .2
 csTOvta = 3
-csTOseek = 6
+#cstoseek = 6
+csTOseek = 3
 nacTOav = 1
 vtaTOnac = 1
 
