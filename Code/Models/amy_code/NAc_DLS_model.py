@@ -15,9 +15,9 @@ tfont = {'fontname':'Times New Roman'}
 
 
 #Specify IC and time step
-y0 = [0.2, 0, 0.1, 0.1, 0, 0, 0, 0.2] #seek, setp, binge,  nac, dls, ALCOHOL, vta, proxy
+y0 = [0.2, 0, 0.1, 0.1, 0, 0, 0, 0.6] #seek, setp, binge,  nac, dls, ALCOHOL, vta, proxy
 y_traj = [0.5, 0, 0.1, 0.2, 0, 0, 0, 0.2] #seek, setp, binge, nac, dls, ALCOHOL, vta, proxy; used in phase plane analysis
-t= np.linspace(0,10,10)  
+t= np.linspace(0,50,500)  
 
 ## Defining the Parameters
 #EXCITABILITIES
@@ -63,9 +63,9 @@ decayFac = 0.001
 nacWEIGHT = 0.75
 
 #DA Modulation
-proxDECAY = 0.005
-EnacSCALE = 2.2
-proxTAU = 1.7
+EnacDECAY = 0.005
+EnacTAU = 1
+EnacMEAN = 0.6
 nacdrSCALE = 5
 
 def F(x): # + = excitatory, - = inhibitory
@@ -73,13 +73,13 @@ def F(x): # + = excitatory, - = inhibitory
 
 def binge_model(t, y0, param):
     def model(t, y):
-        seek, setp, binge, nac, dls,  ALCOHOL, vta, prox = y
+        seek, setp, binge, nac, dls,  ALCOHOL, vta, Enac = y
 
         csTOvta = param
-        dprox_dt = vta/proxTAU - (prox * proxDECAY)
-        Enac = prox * EnacSCALE
-        nacDRIVE = nacdrSCALE/Enac 
-        CS = np.heaviside(csDUR-t,0.5) #Conditioned Stimulus
+        dEnac_dt = vta/EnacTAU + EnacDECAY*(EnacMEAN - Enac)
+        nacDRIVE = nacdrSCALE/Enac
+         
+        CS = np.heaviside(csDUR-t, 0.5) #Conditioned Stimulus
         dseek_dt = (-seek + F(Eseek * (binTOseek * binge + csTOseek * CS - spTOseek * setp - seekDRIVE))) / seekTAU #Seek Activity
         dsetp_dt = (-setp + F(Esetp * (nacWEIGHT * nac + (1-nacWEIGHT) * dls - setpDRIVE - setpDRIVE))) / setpTAU #Alcohol Variable
         dbinge_dt = (-binge + F(Ebinge * (seekTObin * seek - bingeDRIVE))) / bingeTAU #Binge Activity
@@ -89,7 +89,7 @@ def binge_model(t, y0, param):
         dvta_dt = (-vta + F(Evta*(csTOvta * CS - vtaDRIVE))) / vtaTAU #VTA activity
        
 
-        return [dseek_dt, dsetp_dt, dbinge_dt, dnac_dt, ddls_dt, dALCOHOL_dt, dvta_dt, dprox_dt]
+        return [dseek_dt, dsetp_dt, dbinge_dt, dnac_dt, ddls_dt, dALCOHOL_dt, dvta_dt, dEnac_dt]
 
     sol = solve_ivp(model, (0, t[-1]), y0, dense_output=True)
     y = sol.sol(t)
@@ -116,7 +116,6 @@ def der_model(t, y , param): #This model is also defined separately, just for co
 
         return [dseek_dt, dsetp_dt, dbinge_dt, dnac_dt, ddls_dt, dALCOHOL_dt, dvta_dt, dprox_dt]
 
-param_array = np.linspace(1,2.5,500)
 
 
 
@@ -266,6 +265,8 @@ def sub_plots_ani(t,y0, param_array, save):
         ani.save('/Users/amyrude/Downloads/DAmodulateNAc.gif', writer=writer)
    plt.show()
 
+param_array = np.linspace(1, 2.5, 100)
+sub_plots_ani(t,y0, param_array, 'no')
 
 def vector_field(y0, y_traj, t, n,m, name, save): 
     #arguments: initial conditions, t, n/m=neuron population numbers (same as IC), name = ['pop one', 'pop two'], save =='yes' if you want to save]
@@ -355,39 +356,44 @@ def vector_field(y0, y_traj, t, n,m, name, save):
         ani.save('/Users/amyrude/Downloads/seek_binge_phaseplane.gif', writer=writer)
     plt.show()
 
-# sub_plots(t, y0, 'no', csTOvta)
-
-
-# for i in np.arange(numptsx1):
-#             for j in np.arange(numptsx2):
-#                 y = [init[0,z], init[1, z], init[2, z], init[3, z], init[4, z], init[5, z], init[6,z], init[7,z]]
-#                 y[n] = x1array[i, j]
-#                 y[m] = x2array[i, j]
-#                 deriv = der_model(t, y, csTOvta)
-#                 seek_der = deriv[0]
-#                 dls_der = deriv[4]
-#                 vta_der = deriv[6]
-#                 deriv[0] = seek_der[z]
-#                 deriv[4] = dls_der[z]
-#                 deriv[6] = vta_der[z]
-#                 dx1dt_array[i, j] = deriv[n]
-#                 dx2dt_array[i, j] = deriv[m]
-#         ax1.quiver(x1array, x2array, dx1dt_array, dx2dt_array, alpha=0.25, width = 0.003)
-
-
-# vector_field(y0,y_traj, t, 0, 2, ['Seek', 'Binge'], 'no')
-# sub_plots_ani(t,y0,param_array, 'no')
-
+sub_plots(t, y0, 'no', csTOvta)
 
 
 time = np.linspace(0,50,3)
 def td_vect(t,y0, time):
-
-    fig = plt.figure()
+    fig = plt.figure(figsize=(8, 12))
     ax = plt.axes(projection='3d')
-    init = binge_model(t, y0, csTOvta)['Int'] # Solving the system with IC
+    # x_scale=2
+    # y_scale=2
+    # z_scale=4
+    # scale=np.diag([x_scale, y_scale, z_scale, 1.0])
+    # scale=scale*(1.0/scale.max())
+    # scale[3,3]=1.0
+
+    # def short_proj():
+    #     return np.dot(Axes3D.get_proj(ax), scale)
+
+    # ax.get_proj=short_proj
+    ax.set_xlabel('Seek', **tfont, fontsize = 15, rotation=0)
+    ax.set_ylabel('Binge', **tfont, fontsize = 15, rotation = 0)
+    ax.set_zlabel('Time',rotation = 90, **tfont, fontsize = 15)
+    ax.set_xticks([0, 0.2, 0.4, 0.6, 0.8, 1.0], ['0', '0.2', '0.4', '0.6', '0.8', '1.0'], rotation=20, **tfont, fontsize = 12)
+    ax.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0], ['0', '0.2', '0.4', '0.6', '0.8', '1.0'], rotation=20, **tfont, fontsize = 12)
+    ax.set_zticks([0, 25/200, 50/200], ['0', '25', '50'], rotation=20, **tfont, fontsize = 12)
+
+    ax.xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+    ax.yaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+    ax.zaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+    # make the grid lines transparent
+    ax.xaxis._axinfo["grid"]['color'] =  (1,1,1,0)
+    ax.yaxis._axinfo["grid"]['color'] =  (1,1,1,0)
+    ax.zaxis._axinfo["grid"]['color'] =  (1,1,1,0)
+    init = binge_model(time, y0, csTOvta)['Int'] # Solving the system with IC
+    y_plot = binge_model(t, y0, csTOvta)['Int']
+    seek_plot = y_plot[0]
+    binge_plot = y_plot[2]
     for k in np.arange(len(time)):
-        seek_array, binge_array , z = np.meshgrid(np.arange(0, 1.2, 0.2), np.arange(0, 1.2, 0.2), time[k])
+        seek_array, binge_array , z = np.meshgrid(np.arange(0, 1.2, 0.2), np.arange(0, 1.2, 0.2), time[k]/200)
         dseek_array = np.zeros(seek_array.shape)
         dbinge_array = np.zeros(binge_array.shape)
         for i in np.arange(len(seek_array)):
@@ -395,132 +401,18 @@ def td_vect(t,y0, time):
                 y = [init[0, k], init[1, k], init[2, k], init[3, k], init[4,k], init[5, k], init[6, k], init[7, k]]
                 y[0] = seek_array[i, j,0]
                 y[2] = binge_array[i, j,0]
-                deriv = der_model(t, y, csTOvta)
+                deriv = der_model(time, y, csTOvta)
                 seek_d = deriv[0]
-                seek_der = seek_d[k]
                 dseek_array[i,j] = seek_d[k]
                 dbinge_array[i,j] = deriv[2]
-        ax.quiver(seek_array, binge_array, time[k], dseek_array, dbinge_array,0,length = 0.3)
+        ax.quiver(seek_array, binge_array, time[k]/200, dseek_array, dbinge_array, 0 ,length = 0.1, alpha = 0.6)
+        ax.plot3D(seek_plot, binge_plot, t/200, color = 'black', linewidth = 2)
+        ax.scatter3D(seek_plot[0], binge_plot[0], t[0]/200, color = 'red', linewidth = 5)
+        ax.scatter3D(seek_plot[-1], binge_plot[-1], t[-1]/200, color = 'red', linewidth = 5)
+        ax.scatter3D(seek_plot[int(len(t)/2)], binge_plot[int(len(t)/2)], t[int(len(t)/2)]/200, color = 'red', linewidth = 5)
+
+
+
     plt.show()
     return ax
 
-td_vect(t,y0, time)  
-   
-    # seek_array, binge_array, time = np.meshgrid(np.arange(0, 1, 0.2),
-    #                   np.arange(0, 1, 0.2),
-    #                   np.arange(0, 50, 5))
-    # deriv = binge_model(time, y0, csTOvta)['Der'] # Solving the system with IC
-    # seek_der = np.zeros(len(seek_array), len(time))
-    # binge_der = np.zeros(len(binge_array), len(time))
-
-    # for k in len(time):
-    #     deriv_t = deriv[k]
-    #     seek_der[:,k] = deriv_t[0]
-    #     binge_der[:,k] = deriv_t[2]
-    #     t_der = 0
-
-    
-
-
-
-# #     for k in len(time):  
-# #         for i in np.arange(seek_array):
-# #             y = [init[0, time[k]], init[1, time[k]], init[2, time[k]], init[3, time[k]], init[4,time[k]], init[5, time[k]], init[6,time[k]], init[7,time[k]]]
-# #             y[0] = seek_array[i]
-# #             y[2] = binge_array[i]
-# #             deriv = der_model(t, y, csTOvta)
-# #             seek_der = deriv[0]
-# #             binge_der = deriv[2]
-# #             dls_der = deriv[4]
-# #             vta_der = deriv[6]
-# #             deriv[0] = seek_der[z]
-# #             deriv[4] = dls_der[z]
-# #             deriv[6] = vta_der[z]
-
-# #             dx1dt_array[i, j] = deriv[n]
-# #             dx2dt_array[i, j] = deriv[m]
-         
-    
-#     dseek = 
-#     dbinge =
-#     dtime = 0
-#     fig = plt.figure()
-#     ax = fig.gca(projection='3d')     
-
-#     init = binge_model(t, y0, csTOvta)['Int'] # Solving the system with IC
-    
-
-
-
-    # def update(z):
-    #     #Plotting the Vector Fields
-    #     ax1.clear()
-    #     for i in np.arange(numptsx1):
-    #         for j in np.arange(numptsx2):
-    #             y = [init[0,z], init[1, z], init[2, z], init[3, z], init[4, z], init[5, z], init[6,z], init[7,z]]
-    #             y[n] = x1array[i, j]
-    #             y[m] = x2array[i, j]
-    #             deriv = der_model(t, y, csTOvta)
-    #             seek_der = deriv[0]
-    #             dls_der = deriv[4]
-    #             vta_der = deriv[6]
-    #             deriv[0] = seek_der[z]
-    #             deriv[4] = dls_der[z]
-    #             deriv[6] = vta_der[z]
-    #             dx1dt_array[i, j] = deriv[n]
-    #             dx2dt_array[i, j] = deriv[m]
-    #     ax1.quiver(x1array, x2array, dx1dt_array, dx2dt_array, alpha=0.25, width = 0.003)
-    #     y = binge_model(t, y_traj, csTOvta)['Int']
-    #     traj = np.zeros((7, len(t)))
-    #     for k in np.arange(7):
-    #         traj[k, :] = y[k]  #seek, setp, binge,  nac, dls, ALCOHOL, vta
-        
-    #     ax1.plot(traj[n, 0:z], traj[m, 0:z], color='black', linewidth = '2')
-    #     ax1.plot(traj[n,z],traj[m,z],marker='o', color = 'red', markersize='10', zorder=10)
-
-    #     x1list_fine = np.linspace(x1min, x1max, 250)
-    #     x2list_fine = np.linspace(x2min, x2max, 250)
-    #     nullcline = np.zeros((7, 250)) #seek, setp, binge,  nac, dls, ALCOHOL, vta
-    #     for i in np.arange(250):
-    #         for k in np.arange(7):
-    #             y0[k] = traj[k,z]
-    #         y0[n] = x1list_fine[i]
-    #         y0[m] = x2list_fine[i]
-    #         #Solving for the nullclines at each time step
-    #         CS = np.heaviside(csDUR-t,0.5)[z] #Conditioned Stimulus
-    #         nullcline[0,i] = (F(Eseek * (binTOseek * y0[2] + csTOseek * CS - spTOseek * y0[1] - seekDRIVE))) / seekTAU  #Seek Activity
-    #         nullcline[1,i] =  (F(Esetp * (nacWEIGHT * y0[3] + (1-nacWEIGHT) * y0[4] - setpDRIVE))) / setpTAU #Setpoint Activity       
-    #         nullcline[2,i] = (F(Ebinge * (seekTObin * y0[0] - bingeDRIVE))) / bingeTAU #Binge Activity
-    #         nullcline[3,i] = (F(Enac * (vtaTOnac * y0[6] + seekTOnac * y0[0] + binTOnac * y0[2] - nacDRIVE))) / nacTAU  #NAc Activity
-    #         nullcline[4,i] = (F(Edls * (csTOdls * CS - dlsDRIVE)))/ dlsTAU #DLS Activity
-    #         # nullcline[5,i] =  # Alcohol consumed 
-    #         nullcline[6,i] = F(Evta*(csTOvta * CS - vtaDRIVE)) #VTA activity    
-            
-    #     ax1.plot(x1list_fine, nullcline[m, :], 'b-', alpha=0.8, linewidth=1.5)
-    #     ax1.plot(nullcline[n, :], x2list_fine, 'r-', alpha=0.8, linewidth=1.5)
-    #     ax1.set_xlabel(name[0], fontweight='bold', fontsize=15, **tfont)
-    #     ax1.set_ylabel(name[1], fontweight='bold', fontsize=15, **tfont)
-    #     ax1.set_title('Phase Plane Analysis of '+name[0]+' and '+name[1]+'', **tfont, fontweight = 'bold', fontsize = '15')
-
-    #     ax2.plot(t[0:z],traj[n,0:z], color = 'red')
-    #     ax2.plot(t[0:z],traj[m,0:z], color = 'blue')
-    #     ax2.set_xlabel('Time', fontweight='bold', fontsize=15, **tfont)
-    #     ax2.set_ylabel('Firing Rate (Hz)', fontweight='bold', fontsize=15, **tfont)
-    #     ax2.set_xlim(0,t[-1])
-    #     ax2.set_ylim(0,1.05)        
-    #     ax2.set_title('Neuron Activity', **tfont, fontweight = 'bold', fontsize = '15')
-    #     ax2.legend(name)
-    
-    #     ax3.plot(t[0:z],traj[1,0:z], color = 'darkgreen', label = 'Setpoint')
-    #     ax3.set_xlim(0,t[-1])
-    #     ax3.set_ylim(-0.05,0.3)
-    #     ax3.set_xlabel('Time', fontweight='bold', fontsize=15, **tfont)
-    #     ax3.set_ylabel('Firing Rate (Hz)', fontweight='bold', fontsize=15, **tfont)
-    #     ax3.set_title('Setpoint Activity', **tfont, fontweight = 'bold', fontsize = '15')
-    #     return ax
-    
-    # ani = animation.FuncAnimation(fig, update, frames=len(t), interval=1,repeat=False)
-    # if save =='yes':
-    #     writer = PillowWriter(fps=30)
-    #     ani.save('/Users/amyrude/Downloads/seek_binge_phaseplane.gif', writer=writer)
-    # plt.show()
