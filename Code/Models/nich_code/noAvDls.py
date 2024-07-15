@@ -15,8 +15,8 @@ import matplotlib.animation as animation
 def F(x):
         return 1 / (1 + np.exp(-x))
 
-def xppaut_model(t, fuzz, nsLEVEL=nsLEVEL):
-    y0 = [0, .5, .1, 0.2, 0, 0, 0, .8]
+def xppaut_model(t, fuzz, nsLEVEL=nsLEVEL, csTOvta=csTOvta):
+    y0 = [0, .5, .1, 0.2, 0, 0, 0, proxMEAN]
     def model(t, y):
         setp, seek, binge, nac, dls, vta, ALCOHOL, Enac = y
         if fuzz:
@@ -26,9 +26,9 @@ def xppaut_model(t, fuzz, nsLEVEL=nsLEVEL):
 
         ns = nsLEVEL*(F(Ens*(nsSTART-t))+F(Ens*(t-nsSTART-nsDURATION))-1)
         cs = np.heaviside(csDUR-t, 1)
-        dEnac_dt = .2*vta + .1*(.7-Enac)
+        dEnac_dt = vta/proxTAU + proxDECAY*(proxMEAN-Enac)
+        nacDRIVE = (driveMEAN/proxMEAN)*Enac
 
-        #np.exp(-decayFac*t)
         dsetp_dt = (-setp + F(Esetp * (nacTOsetp * (nac+dls) + setpDRIVE)) + noise) / setpTAU
         dseek_dt = (-seek + F(Eseek * (-spTOseek * setp - nsTOseek * ns + csTOseek * cs + binTOseek * binge + seekDRIVE)) + noise) / seekTAU
         dbinge_dt = (-binge + F(Ebinge * (seekTObin * seek - nsTObin * ns + bingeDRIVE)) + noise) / bingeTAU
@@ -44,7 +44,7 @@ def xppaut_model(t, fuzz, nsLEVEL=nsLEVEL):
     y = sol.sol(t)
     return {'Int':y, 'Der':[model(t,y0) for t in t]}
 
-def runGraphs(time=120, fuzz=False, save=False):
+def runGraphs(time=120, fuzz=False, save=False, anim=False):
     fig, axs = plt.subplots(2, 3, figsize=(11, 8))
     t = np.linspace(0, time, 300)
     y = xppaut_model(t, fuzz, nsLEVEL=0)
@@ -60,16 +60,17 @@ def runGraphs(time=120, fuzz=False, save=False):
     axs[0,1].set_title("Insula")
     nac = axs[0, 2].plot(t, y['Int'][3], label="NAc", color = 'maroon')[0]
     dls = axs[0, 2].plot(t, y['Int'][4], label="DLS", color='red')[0]
-    avg = axs[0,2].plot(t, y['Int'][3]+y['Int'][4], '--',label="Striatum", color='tomato')
+    sum = axs[0,2].plot(t, y['Int'][3]+y['Int'][4], '--',label="Striatum", color='tomato')[0]
     axs[0, 2].set_title("\"Effort\"")
     da = axs[1, 1].plot(t, y['Int'][5], label="VTA", color = 'lightcoral')[0]
     axs[1,1].set_title("DA")
     alc = axs[1, 0].plot(t, y['Int'][6], label='Alcohol Vol.', color = 'red')[0]
     neg = axs[1, 2].plot(t, ns, label="NS")[0] #ALC OR NEGSTIM OR HEAVISIDE, CHANGE MANUALLY
     cond = axs[1, 2].plot(t, cs, label="CS")[0]
-    excNac = axs[1,2].plot(t, y['Int'][7], label="Enac")
+    excNac = axs[1,2].plot(t, y['Int'][7], label="Enac")[0]
+    driNac = axs[1, 2].plot(t, (driveMEAN/proxMEAN)*y['Int'][7], label='driveNAC')[0]
     axs[1,2].set_title("Conditioned/Negative Stimulus")
-
+    fig.suptitle("Seek <--> Insula; Enac tracks dopamine, decays to baseline (.8); DLS bistable, turned on by CS; no AV variable")
     #Plot formatting
     for i in range(2):
          for j in range(3):
@@ -84,6 +85,28 @@ def runGraphs(time=120, fuzz=False, save=False):
     axs[1, 1].set_xlabel('T (min)')
     axs[1, 2].set_xlabel('T (min)')
     axs[0, 0].set_ylabel('Normalized Activity')
+    frames = 100
+
+    def update(frame):
+        y = xppaut_model(t, fuzz, nsLEVEL=0, csTOvta=3*(frame/frames))
+        sp.set_data(t, y['Int'][0])
+        seek.set_data(t, y['Int'][1])
+        comb.set_data(t, (y['Int'][0]+y['Int'][1])/2)
+        bin.set_data(t, y['Int'][2])
+        nac.set_data(t, y['Int'][3])
+        dls.set_data(t, y['Int'][4])
+        sum.set_data(t, y['Int'][3]+y['Int'][4])
+        da.set_data(t, y['Int'][5])
+        alc.set_data(t, y['Int'][6])
+        excNac.set_data(t, y['Int'][7])
+        driNac.set_data(t, (driveMEAN/proxMEAN)*y['Int'][7])
+
+
+        return (sp, seek, nac)
+    if anim:
+        ani = animation.FuncAnimation(fig=fig, func=update, frames=frames, interval=10)
+    
+         
 
     if save and fuzz:
         plt.savefig("newFuzzyGraphs"+str(date.today()), dpi=350)
@@ -92,5 +115,5 @@ def runGraphs(time=120, fuzz=False, save=False):
     else:
         plt.show()
     
-runGraphs(100)
+runGraphs(100, anim=True)
 
