@@ -61,6 +61,7 @@ setpDELTA = 1
 csDUR = 3
 
 #PROX
-proxMEAN = .5
-proxDECAY = .01
-proxTAU = 5
+driveMEAN = -.5
+proxMEAN = .2
+proxDECAY = .005
+proxTAU = 2
