@@ -63,11 +63,11 @@ csDUR = 3
 dlsLEVEL = .05
 
 #PROX
-EnacSpeed = 1
+EnacSpeed = 3
 nacDriveSpeed = 1
 
-EnacDecay = .002
+EnacDecay = .02
 NacDriveDecay = .002
 
-driveMEAN = -4
-EnacMEAN = .5
+driveMEAN = -6
+EnacMEAN = 0
