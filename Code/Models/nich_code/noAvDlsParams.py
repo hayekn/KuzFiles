@@ -16,15 +16,15 @@ bingeTAU = .5
 nacTAU = 1
 setpTAU = 25
 vtaTAU = 1
-dlsTAU = 1
+dlsTAU = 4
 
 #DRIVES
 seekDRIVE = 0
 bingeDRIVE = -1
-nacDRIVE = -4
+nacDRIVE = -5
 vtaDRIVE = -1.4
 setpDRIVE = -1
-dlsDRIVE = -1.5
+dlsDRIVE = -2
 
 #SYNAPTIC WEIGHTS
 #spTOseek = 5
@@ -37,11 +37,11 @@ binTOnac = 1
 binTOseek = 2.5
 csTOvta = 3
 #cstoseek = 6
-csTOdls = 1
+csTOdls = 3
 csTOseek = 4
 nacTOsetp = .5 #BINGE TIME
 vtaTOnac = 0
-dlsTOdls = 1
+dlsTOdls = 5
 
 #NEGATIVE STIM
 Ens = 10
@@ -60,8 +60,14 @@ decayFac = .001
 setpDELTA = 1
 csDUR = 3
 
+dlsLEVEL = .05
+
 #PROX
-driveMEAN = -.5
-proxMEAN = .2
-proxDECAY = .005
-proxTAU = 2
+EnacSpeed = 1
+nacDriveSpeed = 1
+
+EnacDecay = .002
+NacDriveDecay = .002
+
+driveMEAN = -4
+EnacMEAN = .5

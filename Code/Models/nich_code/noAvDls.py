@@ -16,9 +16,9 @@ def F(x):
         return 1 / (1 + np.exp(-x))
 
 def xppaut_model(t, fuzz, nsLEVEL=nsLEVEL, csTOvta=csTOvta):
-    y0 = [0, .5, .1, 0.2, 0, 0, 0, proxMEAN]
+    y0 = [0, .5, .1, 0.2, 0, 0, 0, EnacMEAN, driveMEAN]
     def model(t, y):
-        setp, seek, binge, nac, dls, vta, ALCOHOL, Enac = y
+        setp, seek, binge, nac, dls, vta, ALCOHOL, Enac, nacDRIVE = y
         if fuzz:
             noise = np.random.normal(0,.3)
         else:
@@ -26,22 +26,24 @@ def xppaut_model(t, fuzz, nsLEVEL=nsLEVEL, csTOvta=csTOvta):
 
         ns = nsLEVEL*(F(Ens*(nsSTART-t))+F(Ens*(t-nsSTART-nsDURATION))-1)
         cs = np.heaviside(csDUR-t, 1)
-        dEnac_dt = vta/proxTAU + proxDECAY*(proxMEAN-Enac)
-        nacDRIVE = (driveMEAN/proxMEAN)*Enac
 
-        dsetp_dt = (-setp + F(Esetp * (nacTOsetp * (nac+dls) + setpDRIVE)) + noise) / setpTAU
+        dEnac_dt = vta/EnacSpeed + EnacDecay*(EnacMEAN-Enac)
+        dnacDRIVE_dt =  vta/nacDriveSpeed + NacDriveDecay*(driveMEAN-nacDRIVE)
+        
+        dsetp_dt = (-setp + F(Esetp * (nacTOsetp * (nac+dlsLEVEL*dls) + setpDRIVE)) + noise) / setpTAU
         dseek_dt = (-seek + F(Eseek * (-spTOseek * setp - nsTOseek * ns + csTOseek * cs + binTOseek * binge + seekDRIVE)) + noise) / seekTAU
         dbinge_dt = (-binge + F(Ebinge * (seekTObin * seek - nsTObin * ns + bingeDRIVE)) + noise) / bingeTAU
         dnac_dt = (-nac + F(Enac * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge + nacDRIVE)) + noise) / nacTAU
-        ddls_dt = (-dls + F(Edls * (dlsTOdls * dls - csTOdls * cs + dlsDRIVE + noise))) / dlsTAU
+        ddls_dt = (-dls + F(Edls * (dlsTOdls * dls + csTOdls * cs + dlsDRIVE + noise))) / dlsTAU
         
         dvta_dt = (-vta + F(Evta*(csTOvta * cs - nsTOvta * ns + vtaDRIVE)) + noise) / vtaTAU
-        dALCOHOL_dt = (nac+dls)
+        dALCOHOL_dt = (nac+dlsLEVEL*dls)
 
-        return [dsetp_dt, dseek_dt, dbinge_dt, dnac_dt, ddls_dt, dvta_dt, dALCOHOL_dt, dEnac_dt]
+        return [dsetp_dt, dseek_dt, dbinge_dt, dnac_dt, ddls_dt, dvta_dt, dALCOHOL_dt, dEnac_dt, dnacDRIVE_dt]
 
     sol = solve_ivp(model, (0, t[-1]), y0, dense_output=True)
     y = sol.sol(t)
+    y[4] = dlsLEVEL*y[4]
     return {'Int':y, 'Der':[model(t,y0) for t in t]}
 
 def runGraphs(time=120, fuzz=False, save=False, anim=False):
@@ -68,7 +70,7 @@ def runGraphs(time=120, fuzz=False, save=False, anim=False):
     neg = axs[1, 2].plot(t, ns, label="NS")[0] #ALC OR NEGSTIM OR HEAVISIDE, CHANGE MANUALLY
     cond = axs[1, 2].plot(t, cs, label="CS")[0]
     excNac = axs[1,2].plot(t, y['Int'][7], label="Enac")[0]
-    driNac = axs[1, 2].plot(t, (driveMEAN/proxMEAN)*y['Int'][7], label='driveNAC')[0]
+    driNac = axs[1, 2].plot(t, np.abs(y['Int'][8]), label='driveNAC')[0]
     axs[1,2].set_title("Conditioned/Negative Stimulus")
     fig.suptitle("Seek <--> Insula; Enac tracks dopamine, decays to baseline (.8); DLS bistable, turned on by CS; no AV variable")
     #Plot formatting
@@ -88,7 +90,7 @@ def runGraphs(time=120, fuzz=False, save=False, anim=False):
     frames = 100
 
     def update(frame):
-        y = xppaut_model(t, fuzz, nsLEVEL=0, csTOvta=3*(frame/frames))
+        y = xppaut_model(t, fuzz, nsLEVEL=0, csTOvta=2*(frame/frames))
         sp.set_data(t, y['Int'][0])
         seek.set_data(t, y['Int'][1])
         comb.set_data(t, (y['Int'][0]+y['Int'][1])/2)
@@ -99,7 +101,7 @@ def runGraphs(time=120, fuzz=False, save=False, anim=False):
         da.set_data(t, y['Int'][5])
         alc.set_data(t, y['Int'][6])
         excNac.set_data(t, y['Int'][7])
-        driNac.set_data(t, (driveMEAN/proxMEAN)*y['Int'][7])
+        driNac.set_data(t, np.abs(y['Int'][8]))
 
 
         return (sp, seek, nac)
