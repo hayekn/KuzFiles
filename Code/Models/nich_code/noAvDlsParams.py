@@ -40,7 +40,7 @@ csTOvta = 3
 csTOdls = 1
 csTOseek = 4
 nacTOsetp = .5 #BINGE TIME
-vtaTOnac = 1
+vtaTOnac = 0
 dlsTOdls = 1
 
 #NEGATIVE STIM
@@ -59,3 +59,8 @@ daFACTOR = 0.2
 decayFac = .001
 setpDELTA = 1
 csDUR = 3
+
+#PROX
+proxMEAN = .5
+proxDECAY = .01
+proxTAU = 5

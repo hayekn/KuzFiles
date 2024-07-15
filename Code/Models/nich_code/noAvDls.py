@@ -16,7 +16,7 @@ def F(x):
         return 1 / (1 + np.exp(-x))
 
 def xppaut_model(t, fuzz, nsLEVEL=nsLEVEL):
-    y0 = [0, .5, .1, 0.2, 0, 0, 0, .8]
+    y0 = [0, .5, .1, 0.2, 0, 0, 0, .5]
     def model(t, y):
         setp, seek, binge, nac, dls, vta, ALCOHOL, Enac = y
         if fuzz:
@@ -26,7 +26,8 @@ def xppaut_model(t, fuzz, nsLEVEL=nsLEVEL):
 
         ns = nsLEVEL*(F(Ens*(nsSTART-t))+F(Ens*(t-nsSTART-nsDURATION))-1)
         cs = np.heaviside(csDUR-t, 1)
-        dEnac_dt = .2*vta + .1*(.7-Enac)
+        dEnac_dt = vta/proxTAU + proxDECAY*(proxMEAN-Enac)
+        nacDRIVE = -2.8*Enac
 
         #np.exp(-decayFac*t)
         dsetp_dt = (-setp + F(Esetp * (nacTOsetp * (nac+dls) + setpDRIVE)) + noise) / setpTAU
@@ -68,8 +69,9 @@ def runGraphs(time=120, fuzz=False, save=False):
     neg = axs[1, 2].plot(t, ns, label="NS")[0] #ALC OR NEGSTIM OR HEAVISIDE, CHANGE MANUALLY
     cond = axs[1, 2].plot(t, cs, label="CS")[0]
     excNac = axs[1,2].plot(t, y['Int'][7], label="Enac")
+    driNac = axs[1, 2].plot(t, -2*y['Int'][7], label='driveNAC')
     axs[1,2].set_title("Conditioned/Negative Stimulus")
-
+    fig.suptitle("Seek <--> Insula; Enac tracks dopamine, decays to baseline (.8); DLS bistable, turned on by CS; no AV variable")
     #Plot formatting
     for i in range(2):
          for j in range(3):
@@ -84,6 +86,10 @@ def runGraphs(time=120, fuzz=False, save=False):
     axs[1, 1].set_xlabel('T (min)')
     axs[1, 2].set_xlabel('T (min)')
     axs[0, 0].set_ylabel('Normalized Activity')
+
+    if anim:
+         y = xppaut_model(t, fuzz, nsLEVEL=0, csTOvta=5*(frame/100))
+         
 
     if save and fuzz:
         plt.savefig("newFuzzyGraphs"+str(date.today()), dpi=350)
