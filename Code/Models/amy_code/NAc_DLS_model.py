@@ -15,7 +15,7 @@ tfont = {'fontname':'Times New Roman'}
 
 
 #Specify IC and time step
-y0 = [0.2, 0, 0.1, 0.1, 0, 0, 0, 0.6] #seek, setp, binge,  nac, dls, ALCOHOL, vta, proxy
+y0 = [0.2, 0, 0.1, 0.1, 0, 0, 0, 0.6, 5] #seek, setp, binge,  nac, dls, ALCOHOL, vta, proxy
 y_traj = [0.5, 0, 0.1, 0.2, 0, 0, 0, 0.2] #seek, setp, binge, nac, dls, ALCOHOL, vta, proxy; used in phase plane analysis
 t= np.linspace(0,50,500)  
 
@@ -26,13 +26,13 @@ Enac = 1.5
 Esetp = 1.5
 Eseek= 5
 Evta = 3.5
-Edls = 1
+Edls = 3
 
 #TIMESCALES
 seekTAU = 1
 bingeTAU = 1
 nacTAU = 1
-setpTAU = 20
+setpTAU = 30
 vtaTAU = 1
 dlsTAU = 1
 
@@ -43,7 +43,7 @@ bingeDRIVE = 1
 nacDRIVE = 1.9
 setpDRIVE = 1
 vtaDRIVE = 1.5
-dlsDRIVE = 2.3
+dlsDRIVE = 1.4
 
 #SYNAPTIC WEIGHTS
 spTOseek = 8
@@ -54,7 +54,7 @@ binTOnac = 1.5
 vtaTOnac = 1.5
 csTOseek = 5
 csTOvta = 1.5 # modulate this connection to change magnitude of DA peak (1.5 ~ 0.5)
-csTOdls = 0.5
+csTOdls = 2
 
 
 #EXTRAS
@@ -64,15 +64,46 @@ nacWEIGHT = 0.75
 
 #DA Modulation
 EnacDECAY = 0.005
+nacdriveDECAY = 0.005
 EnacTAU = 1
+nacdriveTAU = 1
 EnacMEAN = 0.6
+nacdriveMEAN = 0.7
 nacdrSCALE = 5
+driveMEAN = 8.3
+dlsSCALE = 0.1
 
 def F(x): # + = excitatory, - = inhibitory
         return 1 / (1 + np.exp(-x))
 
 def binge_model(t, y0, param):
     def model(t, y):
+        seek, setp, binge, nac, dls,  ALCOHOL, vta, Enac, nacDRIVE = y
+
+        csTOvta = param
+        dEnac_dt = vta/EnacTAU + EnacDECAY*(EnacMEAN - Enac)
+        dnacDRIVE_dt = -1*vta/nacdriveTAU + nacdriveDECAY*(nacDRIVE - nacdriveMEAN)
+
+        CS = np.heaviside(csDUR-t, 0.5) #Conditioned Stimulus
+        dseek_dt = (-seek + F(Eseek * (binTOseek * binge + csTOseek * CS - spTOseek * setp - seekDRIVE))) / seekTAU #Seek Activity
+        dsetp_dt = (-setp + F(Esetp * (0.9*nac + dlsSCALE * dls - setpDRIVE - setpDRIVE))) / setpTAU #Alcohol Variable
+        dbinge_dt = (-binge + F(Ebinge * (seekTObin * seek - bingeDRIVE))) / bingeTAU #Binge Activity
+        dnac_dt = (-nac + F(Enac * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge - nacDRIVE))) / nacTAU #NAc Activity
+        ddls_dt = (-dls + F(Edls * ( 3*dls + csTOdls * CS - dlsDRIVE)))/ dlsTAU
+        dALCOHOL_dt = nac + dlsSCALE * dls # Alcohol consumed 
+        dvta_dt = (-vta + F(Evta*( csTOvta * CS - vtaDRIVE))) / vtaTAU #VTA activity
+       
+
+        return [dseek_dt, dsetp_dt, dbinge_dt, dnac_dt, ddls_dt, dALCOHOL_dt, dvta_dt, dEnac_dt, dnacDRIVE_dt]
+
+    sol = solve_ivp(model, (0, t[-1]), y0, dense_output=True)
+    y = sol.sol(t)
+    CS = np.heaviside(csDUR-t,0.5)
+    y[4] = dlsSCALE * y[4]
+    return {'Int':y, 'Der':[model(t,y0) for t in t], 'CS':CS}
+
+# Some extra functions defined for plotting 
+def der_model(t, y , param): #This model is also defined separately, just for convenience. The system of ODEs is also defined in the "binge_model"
         seek, setp, binge, nac, dls,  ALCOHOL, vta, Enac = y
 
         csTOvta = param
@@ -91,31 +122,6 @@ def binge_model(t, y0, param):
 
         return [dseek_dt, dsetp_dt, dbinge_dt, dnac_dt, ddls_dt, dALCOHOL_dt, dvta_dt, dEnac_dt]
 
-    sol = solve_ivp(model, (0, t[-1]), y0, dense_output=True)
-    y = sol.sol(t)
-    CS = np.heaviside(csDUR-t,0.5)
-    return {'Int':y, 'Der':[model(t,y0) for t in t], 'CS':CS}
-
-# Some extra functions defined for plotting 
-def der_model(t, y , param): #This model is also defined separately, just for convenience. The system of ODEs is also defined in the "binge_model"
-        seek, setp, binge, nac, dls,  ALCOHOL, vta, prox = y
-
-        csTOvta = param
-        dprox_dt = vta/proxTAU - (prox * proxDECAY)
-        Enac = prox * EnacSCALE
-        nacDRIVE = nacdrSCALE/Enac 
-        CS = np.heaviside(csDUR-t,0.5) #Conditioned Stimulus
-        dseek_dt = (-seek + F(Eseek * (binTOseek * binge + csTOseek * CS - spTOseek * setp - seekDRIVE))) / seekTAU #Seek Activity
-        dsetp_dt = (-setp + F(Esetp * (nacWEIGHT * nac + (1-nacWEIGHT) * dls - setpDRIVE - setpDRIVE))) / setpTAU #Alcohol Variable
-        dbinge_dt = (-binge + F(Ebinge * (seekTObin * seek - bingeDRIVE))) / bingeTAU #Binge Activity
-        dnac_dt = (-nac + F(Enac * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge - nacDRIVE))) / nacTAU #NAc Activity
-        ddls_dt = (-dls + F(Edls * ( csTOdls * CS - dlsDRIVE)))/ dlsTAU
-        dALCOHOL_dt = nac * nacWEIGHT + dls * (1-nacWEIGHT) # Alcohol consumed 
-        dvta_dt = (-vta + F(Evta*(csTOvta * CS - vtaDRIVE))) / vtaTAU #VTA activity
-       
-
-        return [dseek_dt, dsetp_dt, dbinge_dt, dnac_dt, ddls_dt, dALCOHOL_dt, dvta_dt, dprox_dt]
-
 
 
 
@@ -132,7 +138,8 @@ def sub_plots(t,y0, noise, param):
     dls = y['Int'][4]
     alc = y['Int'][5]
     vta = y['Int'][6]
-    prox = y['Int'][7]
+    Enac = y['Int'][7]
+    drive = y['Int'][8]
     CS = y['CS']
     # for n in np.arange(len(alc)):
     #     if alc[n]>=TOLERANCE:
@@ -160,16 +167,16 @@ def sub_plots(t,y0, noise, param):
     # axs[0,2].axvline(x=thresh, color = 'silver',linestyle='dashed')
     axs[0,2].plot(t,nac, label = 'NAc', color = 'maroon')
     axs[0,2].plot(t,dls, label = 'DLS', color = 'red')
-    axs[0,2].plot(t, nac * nacWEIGHT + (1-nacWEIGHT) * dls,  '--', label = 'Striatum', color = 'pink')
-    axs[0,2].set_title('NAc Activity',**tfont, fontweight = 'bold', fontsize='14')
+    axs[0,2].plot(t, nac + dlsSCALE * dls,  '--', label = 'Striatum', color = 'pink')
+    axs[0,2].set_title('Striatal Activity',**tfont, fontweight = 'bold', fontsize='14')
     axs[0,2].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
     axs[0,2].set_xlabel('Time (min)',**tfont, fontsize='12')
+    axs[0,2].set_ylim(0,1)
     axs[0,2].legend()
 
     # axs[1,0].axvline(x=thresh, color = 'silver',linestyle='dashed')
     axs[1,0].plot(t, vta, label = 'DA', color = 'firebrick')
-    axs[1,0].plot(t, prox, label = 'prox' , color = 'blue')
-
+    axs[1,0].set_ylim(0,1)
     axs[1,0].set_title('VTA Activity',**tfont, fontweight = 'bold', fontsize='14')
     axs[1,0].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
     axs[1,0].set_xlabel('Time (min)',**tfont, fontsize='12')
@@ -177,8 +184,13 @@ def sub_plots(t,y0, noise, param):
 
     # axs[1,1].axvline(x=thresh, color = 'silver',linestyle='dashed')
     axs[1,1].plot(t, CS, color = 'peru', label = 'CS')
+    axs[1,1].plot(t, Enac, label = 'Enac' , color = 'blue')
+    axs[1,1].plot(t, drive , color = 'pink', label = 'Nac Drive new')
+
+    axs[1,1].plot(t, nacdrSCALE/Enac , color = 'orange', label = 'Nac Drive')
+
     # axs[1,1].plot(t, av, color = 'sienna', label = 'AV')
-    axs[1,1].set_title('Conditioned Stimulus and Alc Var',**tfont, fontweight = 'bold', fontsize='14')
+    axs[1,1].set_title('Conditioned Stimulus \n and NAc Parameters',**tfont, fontweight = 'bold', fontsize='14')
     axs[1,1].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
     axs[1,1].set_xlabel('Time (min)',**tfont, fontsize='12')
     axs[1,1].legend()
@@ -188,7 +200,7 @@ def sub_plots(t,y0, noise, param):
     axs[1,2].set_title('Alcohol Consumed',**tfont, fontweight = 'bold', fontsize='14')
     axs[1,2].set_ylabel('Volume (mL)',**tfont, fontsize='12')
     axs[1,2].set_xlabel('Time (min)',**tfont, fontsize='12')
-    plt.subplots_adjust(wspace=0.3, hspace=0.3)
+    plt.subplots_adjust(wspace=0.3, hspace=0.4)
     plt.show()
 
 def sub_plots_ani(t,y0, param_array, save):
@@ -210,7 +222,8 @@ def sub_plots_ani(t,y0, param_array, save):
         dls = y['Int'][4]
         alc = y['Int'][5]
         vta = y['Int'][6]
-        prox = y['Int'][7]
+        Enac = y['Int'][7]
+        drive = y['Int'][8]
         CS = y['CS'] 
         axs[0,0].plot(t, (seek+setp)/2,'--' ,label = 'Combined', color = 'lightsteelblue')
         axs[0,0].plot(t, seek, label = 'Seek', color = 'midnightblue')
@@ -220,42 +233,50 @@ def sub_plots_ani(t,y0, param_array, save):
         axs[0,0].set_xlabel('Time (min)',**tfont, fontsize='12')
         axs[0,0].legend()
 
+        # axs[0,1].axvline(x=thresh, color = 'silver',linestyle='dashed')
         axs[0,1].plot(t,binge, label ='Binge', color = 'mediumseagreen')
         axs[0,1].set_title('Insular Activity',**tfont, fontweight = 'bold', fontsize='14')
         axs[0,1].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
         axs[0,1].set_xlabel('Time (min)',**tfont, fontsize='12')
         axs[0,1].legend()
 
+        # axs[0,2].axvline(x=thresh, color = 'silver',linestyle='dashed')
         axs[0,2].plot(t,nac, label = 'NAc', color = 'maroon')
         axs[0,2].plot(t,dls, label = 'DLS', color = 'red')
-        axs[0,2].plot(t, nac * nacWEIGHT + (1-nacWEIGHT) * dls,  '--', label = 'Striatum', color = 'pink')
-        axs[0,2].set_title('NAc Activity',**tfont, fontweight = 'bold', fontsize='14')
+        axs[0,2].plot(t, nac +  dls,  '--', label = 'Striatum', color = 'pink')
+        axs[0,2].set_title('Striatal Activity',**tfont, fontweight = 'bold', fontsize='14')
         axs[0,2].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
         axs[0,2].set_xlabel('Time (min)',**tfont, fontsize='12')
+        axs[0,2].set_ylim(0,1.2)
         axs[0,2].legend()
-        axs[0,2].set_ylim(0,1)
 
+        # axs[1,0].axvline(x=thresh, color = 'silver',linestyle='dashed')
         axs[1,0].plot(t, vta, label = 'DA', color = 'firebrick')
         axs[1,0].set_ylim(0,1)
-
-        # axs[1,0].plot(t, prox * EnacSCALE, label = 'Enac' , color = 'blue')
-
         axs[1,0].set_title('VTA Activity',**tfont, fontweight = 'bold', fontsize='14')
         axs[1,0].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
         axs[1,0].set_xlabel('Time (min)',**tfont, fontsize='12')
         axs[1,0].legend()
 
+        # axs[1,1].axvline(x=thresh, color = 'silver',linestyle='dashed')
         axs[1,1].plot(t, CS, color = 'peru', label = 'CS')
-        axs[1,1].set_title('Conditioned Stimulus and Alc Var',**tfont, fontweight = 'bold', fontsize='14')
+        axs[1,1].plot(t, Enac, label = 'Enac' , color = 'blue')
+        axs[1,1].plot(t, drive , color = 'orange', label = 'Nac Drive')
+        axs[1,1].plot(t, nacdrSCALE/Enac , color = 'pink', label = 'old Drive')
+
+
+        # axs[1,1].plot(t, av, color = 'sienna', label = 'AV')
+        axs[1,1].set_title('Conditioned Stimulus \n and NAc Parameters',**tfont, fontweight = 'bold', fontsize='14')
         axs[1,1].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
         axs[1,1].set_xlabel('Time (min)',**tfont, fontsize='12')
         axs[1,1].legend()
 
+        # axs[1,2].axvline(x=thresh, color = 'silver',linestyle='dashed')
         axs[1,2].plot(t, alc, color = 'red')
         axs[1,2].set_title('Alcohol Consumed',**tfont, fontweight = 'bold', fontsize='14')
         axs[1,2].set_ylabel('Volume (mL)',**tfont, fontsize='12')
         axs[1,2].set_xlabel('Time (min)',**tfont, fontsize='12')
-        axs[1,2].set_ylim(0,10)
+        axs[1,2].set_ylim(0,16)
 
         plt.subplots_adjust(wspace=0.3, hspace=0.3)
         return axs
@@ -356,10 +377,11 @@ def vector_field(y0, y_traj, t, n,m, name, save):
         ani.save('/Users/amyrude/Downloads/seek_binge_phaseplane.gif', writer=writer)
     plt.show()
 
-sub_plots(t, y0, 'no', csTOvta)
+# sub_plots(t, y0, 'no', csTOvta)
 
 
-time = np.linspace(0,50,3)
+# time = np.linspace(0,50,3)
+time = np.array([0,15,30])
 def td_vect(t,y0, time):
     fig = plt.figure(figsize=(8, 12))
     ax = plt.axes(projection='3d')
@@ -374,12 +396,12 @@ def td_vect(t,y0, time):
     #     return np.dot(Axes3D.get_proj(ax), scale)
 
     # ax.get_proj=short_proj
-    ax.set_xlabel('Seek', **tfont, fontsize = 15, rotation=0)
-    ax.set_ylabel('Binge', **tfont, fontsize = 15, rotation = 0)
+    ax.set_xlabel('Seek', **tfont, fontsize = 15)
+    ax.set_ylabel('Binge', **tfont, fontsize = 15)
     ax.set_zlabel('Time',rotation = 90, **tfont, fontsize = 15)
-    ax.set_xticks([0, 0.2, 0.4, 0.6, 0.8, 1.0], ['0', '0.2', '0.4', '0.6', '0.8', '1.0'], rotation=20, **tfont, fontsize = 12)
-    ax.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0], ['0', '0.2', '0.4', '0.6', '0.8', '1.0'], rotation=20, **tfont, fontsize = 12)
-    ax.set_zticks([0, 25/200, 50/200], ['0', '25', '50'], rotation=20, **tfont, fontsize = 12)
+    ax.set_xticks([0, 0.2, 0.4, 0.6, 0.8, 1.0], ['0', '0.2', '0.4', '0.6', '0.8', '1.0'],  **tfont, fontsize = 12)
+    ax.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0], ['0', '0.2', '0.4', '0.6', '0.8', '1.0'],  **tfont, fontsize = 12)
+    ax.set_zticks([0, 15/200, 30/200], ['0', '15', '30'], rotation=20, **tfont, fontsize = 12)
 
     ax.xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
     ax.yaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
@@ -405,14 +427,15 @@ def td_vect(t,y0, time):
                 seek_d = deriv[0]
                 dseek_array[i,j] = seek_d[k]
                 dbinge_array[i,j] = deriv[2]
-        ax.quiver(seek_array, binge_array, time[k]/200, dseek_array, dbinge_array, 0 ,length = 0.1, alpha = 0.6)
+        ax.quiver(seek_array, binge_array, time[k]/200, dseek_array, dbinge_array, 0 ,length = 0.09, alpha = 0.6, arrow_length_ratio = 0.15)
         ax.plot3D(seek_plot, binge_plot, t/200, color = 'black', linewidth = 2)
         ax.scatter3D(seek_plot[0], binge_plot[0], t[0]/200, color = 'red', linewidth = 5)
-        ax.scatter3D(seek_plot[-1], binge_plot[-1], t[-1]/200, color = 'red', linewidth = 5)
-        ax.scatter3D(seek_plot[int(len(t)/2)], binge_plot[int(len(t)/2)], t[int(len(t)/2)]/200, color = 'red', linewidth = 5)
+        ax.scatter3D(seek_plot[-1], binge_plot[-1], t[-1]/200, color = 'black', linewidth = 2.5, marker = '^')
+        # ax.scatter3D(seek_plot[int(len(t)/2)], binge_plot[int(len(t)/2)], t[int(len(t)/2)]/200, color = 'red', linewidth = 5)
 
 
 
     plt.show()
     return ax
 
+# td_vect(t,y0,time)
