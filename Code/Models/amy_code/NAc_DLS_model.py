@@ -88,7 +88,7 @@ def binge_model(t, y0, param):
         dsetp_dt = (-setp + F(Esetp * (nac + dlsSCALE * dls - setpDRIVE ))) / setpTAU #Alcohol Variable
         dbinge_dt = (-binge + F(Ebinge * (seekTObin * seek - bingeDRIVE))) / bingeTAU #Binge Activity
         dnac_dt = (-nac + F(Enac * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge + nacDRIVE))) / nacTAU #NAc Activity
-        ddls_dt = (-dls + F(Edls * (dlsExcite*dls + csTOdls * CS - dlsDRIVE)))/ dlsTAU
+        ddls_dt = (-dls + F(Edls * (3*dls + csTOdls * CS - dlsDRIVE)))/ dlsTAU
         dALCOHOL_dt = nac + dlsSCALE * dls # Alcohol consumed 
         dvta_dt = (-vta + F(Evta*( csTOvta * CS - vtaDRIVE))) / vtaTAU #VTA activity
        

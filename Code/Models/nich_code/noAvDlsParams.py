@@ -28,18 +28,16 @@ dlsDRIVE = -2
 
 #SYNAPTIC WEIGHTS
 #spTOseek = 5
-spTOseek = 10
+spTOseek = 13
 seekTOnac = 4
 seekTObin = 2.5
-seekTOseek = 4
-seekTOdls = 3
 binTOnac = 1
 binTOseek = 2.5
 csTOvta = 3
 #cstoseek = 6
 csTOdls = 3
 csTOseek = 4
-nacTOsetp = .5 #BINGE TIME
+nacTOsetp = .3 #BINGE TIME
 vtaTOnac = 0
 dlsTOdls = 5
 
@@ -54,20 +52,16 @@ nsTOnseek = 1
 nsTObin = 0
 
 #EXTRAS
-TOLERANCE = 20
-daFACTOR = 0.2
-decayFac = .001
-setpDELTA = 1
 csDUR = 3
 
 dlsLEVEL = .05
 
 #PROX
-EnacSpeed = 3
-nacDriveSpeed = 1
+EnacSpeed = 1
+nacDriveSpeed = .7
 
-EnacDecay = .02
-NacDriveDecay = .002
+EnacDecay = .001
+NacDriveDecay = .003
 
-driveMEAN = -6
-EnacMEAN = 0
+driveMEAN = -7
+EnacMEAN = .6
