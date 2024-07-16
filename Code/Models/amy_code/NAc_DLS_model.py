@@ -15,17 +15,16 @@ tfont = {'fontname':'Times New Roman'}
 
 
 #Specify IC and time step
-y0 = [0.2, 0, 0.1, 0.1, 0, 0, 0, 0.6, 5] #seek, setp, binge,  nac, dls, ALCOHOL, vta, proxy
+y0 = [0.2, 0, 0.1, 0.1, 0, 0, 0, 0.6, -7] #seek, setp, binge,  nac, dls, ALCOHOL, vta, proxy
 y_traj = [0.5, 0, 0.1, 0.2, 0, 0, 0, 0.2] #seek, setp, binge, nac, dls, ALCOHOL, vta, proxy; used in phase plane analysis
-t= np.linspace(0,50,500)  
+t= np.linspace(0,30,500)  
 
 ## Defining the Parameters
 #EXCITABILITIES
 Ebinge = 5
-Enac = 1.5
 Esetp = 1.5
 Eseek= 5
-Evta = 3.5
+Evta = 2
 Edls = 3
 
 #TIMESCALES
@@ -40,20 +39,19 @@ dlsTAU = 1
 #DRIVES
 seekDRIVE = 1
 bingeDRIVE = 1
-nacDRIVE = 1.9
 setpDRIVE = 1
-vtaDRIVE = 1.5
+vtaDRIVE = 3.5
 dlsDRIVE = 1.4
 
 #SYNAPTIC WEIGHTS
 spTOseek = 8
-seekTOnac = 1.5
+seekTOnac = 2.5
 seekTObin = 1.75
 binTOseek = 1.75
-binTOnac = 1.5
-vtaTOnac = 1.5
+binTOnac = 2.5
+vtaTOnac = 2.5
 csTOseek = 5
-csTOvta = 1.5 # modulate this connection to change magnitude of DA peak (1.5 ~ 0.5)
+csTOvta = 4.2 # modulate this connection to change magnitude of DA peak (3 to 5.5)
 csTOdls = 2
 
 
@@ -63,14 +61,13 @@ decayFac = 0.001
 nacWEIGHT = 0.75
 
 #DA Modulation
-EnacDECAY = 0.005
-nacdriveDECAY = 0.005
-EnacTAU = 1
-nacdriveTAU = 1
+EnacDECAY = 0.003
+nacdriveDECAY = 0.003
+EnacTAU = 0.8
+nacdriveTAU = 0.8
 EnacMEAN = 0.6
-nacdriveMEAN = 0.7
+driveMEAN = -7
 nacdrSCALE = 5
-driveMEAN = 8.3
 dlsSCALE = 0.1
 
 def F(x): # + = excitatory, - = inhibitory
@@ -81,14 +78,15 @@ def binge_model(t, y0, param):
         seek, setp, binge, nac, dls,  ALCOHOL, vta, Enac, nacDRIVE = y
 
         csTOvta = param
+
         dEnac_dt = vta/EnacTAU + EnacDECAY*(EnacMEAN - Enac)
-        dnacDRIVE_dt = -1*vta/nacdriveTAU + nacdriveDECAY*(nacDRIVE - nacdriveMEAN)
+        dnacDRIVE_dt = vta/nacdriveTAU + nacdriveDECAY*(driveMEAN - nacDRIVE)
 
         CS = np.heaviside(csDUR-t, 0.5) #Conditioned Stimulus
         dseek_dt = (-seek + F(Eseek * (binTOseek * binge + csTOseek * CS - spTOseek * setp - seekDRIVE))) / seekTAU #Seek Activity
         dsetp_dt = (-setp + F(Esetp * (0.9*nac + dlsSCALE * dls - setpDRIVE - setpDRIVE))) / setpTAU #Alcohol Variable
         dbinge_dt = (-binge + F(Ebinge * (seekTObin * seek - bingeDRIVE))) / bingeTAU #Binge Activity
-        dnac_dt = (-nac + F(Enac * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge - nacDRIVE))) / nacTAU #NAc Activity
+        dnac_dt = (-nac + F(Enac * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge + nacDRIVE))) / nacTAU #NAc Activity
         ddls_dt = (-dls + F(Edls * ( 3*dls + csTOdls * CS - dlsDRIVE)))/ dlsTAU
         dALCOHOL_dt = nac + dlsSCALE * dls # Alcohol consumed 
         dvta_dt = (-vta + F(Evta*( csTOvta * CS - vtaDRIVE))) / vtaTAU #VTA activity
@@ -100,29 +98,32 @@ def binge_model(t, y0, param):
     y = sol.sol(t)
     CS = np.heaviside(csDUR-t,0.5)
     y[4] = dlsSCALE * y[4]
+    # y[8] = 0.9 * y[8]
     return {'Int':y, 'Der':[model(t,y0) for t in t], 'CS':CS}
 
 # Some extra functions defined for plotting 
 def der_model(t, y , param): #This model is also defined separately, just for convenience. The system of ODEs is also defined in the "binge_model"
-        seek, setp, binge, nac, dls,  ALCOHOL, vta, Enac = y
+        seek, setp, binge, nac, dls,  ALCOHOL, vta, Enac, nacDRIVE = y
 
         csTOvta = param
+
         dEnac_dt = vta/EnacTAU + EnacDECAY*(EnacMEAN - Enac)
-        nacDRIVE = nacdrSCALE/Enac
-         
+        dnacDRIVE_dt = vta/nacdriveTAU + nacdriveDECAY*(driveMEAN - nacDRIVE)
+
         CS = np.heaviside(csDUR-t, 0.5) #Conditioned Stimulus
         dseek_dt = (-seek + F(Eseek * (binTOseek * binge + csTOseek * CS - spTOseek * setp - seekDRIVE))) / seekTAU #Seek Activity
-        dsetp_dt = (-setp + F(Esetp * (nacWEIGHT * nac + (1-nacWEIGHT) * dls - setpDRIVE - setpDRIVE))) / setpTAU #Alcohol Variable
+        dsetp_dt = (-setp + F(Esetp * (0.9*nac + dlsSCALE * dls - setpDRIVE - setpDRIVE))) / setpTAU #Alcohol Variable
         dbinge_dt = (-binge + F(Ebinge * (seekTObin * seek - bingeDRIVE))) / bingeTAU #Binge Activity
-        dnac_dt = (-nac + F(Enac * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge - nacDRIVE))) / nacTAU #NAc Activity
-        ddls_dt = (-dls + F(Edls * ( csTOdls * CS - dlsDRIVE)))/ dlsTAU
-        dALCOHOL_dt = nac * nacWEIGHT + dls * (1-nacWEIGHT) # Alcohol consumed 
-        dvta_dt = (-vta + F(Evta*(csTOvta * CS - vtaDRIVE))) / vtaTAU #VTA activity
+        dnac_dt = (-nac + F(Enac * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge + nacDRIVE))) / nacTAU #NAc Activity
+        ddls_dt = (-dls + F(Edls * ( 3*dls + csTOdls * CS - dlsDRIVE)))/ dlsTAU
+        dALCOHOL_dt = nac + dlsSCALE * dls # Alcohol consumed 
+        dvta_dt = (-vta + F(Evta*( csTOvta * CS - vtaDRIVE))) / vtaTAU #VTA activity
        
 
-        return [dseek_dt, dsetp_dt, dbinge_dt, dnac_dt, ddls_dt, dALCOHOL_dt, dvta_dt, dEnac_dt]
+        return [dseek_dt, dsetp_dt, dbinge_dt, dnac_dt, ddls_dt, dALCOHOL_dt, dvta_dt, dEnac_dt, dnacDRIVE_dt]
 
 
+param_array = np.linspace(3, 5.5, 100)
 
 
 #Plotting the Data
@@ -167,11 +168,11 @@ def sub_plots(t,y0, noise, param):
     # axs[0,2].axvline(x=thresh, color = 'silver',linestyle='dashed')
     axs[0,2].plot(t,nac, label = 'NAc', color = 'maroon')
     axs[0,2].plot(t,dls, label = 'DLS', color = 'red')
-    axs[0,2].plot(t, nac + dlsSCALE * dls,  '--', label = 'Striatum', color = 'pink')
+    axs[0,2].plot(t, nac + dls,  '--', label = 'Striatum', color = 'pink')
     axs[0,2].set_title('Striatal Activity',**tfont, fontweight = 'bold', fontsize='14')
     axs[0,2].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
     axs[0,2].set_xlabel('Time (min)',**tfont, fontsize='12')
-    axs[0,2].set_ylim(0,1)
+    axs[0,2].set_ylim(0,1.1)
     axs[0,2].legend()
 
     # axs[1,0].axvline(x=thresh, color = 'silver',linestyle='dashed')
@@ -185,9 +186,9 @@ def sub_plots(t,y0, noise, param):
     # axs[1,1].axvline(x=thresh, color = 'silver',linestyle='dashed')
     axs[1,1].plot(t, CS, color = 'peru', label = 'CS')
     axs[1,1].plot(t, Enac, label = 'Enac' , color = 'blue')
-    axs[1,1].plot(t, drive , color = 'pink', label = 'Nac Drive new')
+    axs[1,1].plot(t, abs(drive) , color = 'pink', label = 'Nac Drive')
 
-    axs[1,1].plot(t, nacdrSCALE/Enac , color = 'orange', label = 'Nac Drive')
+    # axs[1,1].plot(t, nacdrSCALE/Enac , color = 'orange', label = 'Nac Drive')
 
     # axs[1,1].plot(t, av, color = 'sienna', label = 'AV')
     axs[1,1].set_title('Conditioned Stimulus \n and NAc Parameters',**tfont, fontweight = 'bold', fontsize='14')
@@ -222,7 +223,7 @@ def sub_plots_ani(t,y0, param_array, save):
         dls = y['Int'][4]
         alc = y['Int'][5]
         vta = y['Int'][6]
-        Enac = y['Int'][7]
+        Excite = y['Int'][7]
         drive = y['Int'][8]
         CS = y['CS'] 
         axs[0,0].plot(t, (seek+setp)/2,'--' ,label = 'Combined', color = 'lightsteelblue')
@@ -247,7 +248,7 @@ def sub_plots_ani(t,y0, param_array, save):
         axs[0,2].set_title('Striatal Activity',**tfont, fontweight = 'bold', fontsize='14')
         axs[0,2].set_ylabel('Firing Rate (Hz)',**tfont, fontsize='12')
         axs[0,2].set_xlabel('Time (min)',**tfont, fontsize='12')
-        axs[0,2].set_ylim(0,1.2)
+        axs[0,2].set_ylim(0,1.1)
         axs[0,2].legend()
 
         # axs[1,0].axvline(x=thresh, color = 'silver',linestyle='dashed')
@@ -260,9 +261,9 @@ def sub_plots_ani(t,y0, param_array, save):
 
         # axs[1,1].axvline(x=thresh, color = 'silver',linestyle='dashed')
         axs[1,1].plot(t, CS, color = 'peru', label = 'CS')
-        axs[1,1].plot(t, Enac, label = 'Enac' , color = 'blue')
-        axs[1,1].plot(t, drive , color = 'orange', label = 'Nac Drive')
-        axs[1,1].plot(t, nacdrSCALE/Enac , color = 'pink', label = 'old Drive')
+        axs[1,1].plot(t, Excite, label = 'Enac' , color = 'blue')
+        axs[1,1].plot(t, abs(drive) , color = 'orange', label = 'Nac Drive')
+        # axs[1,1].plot(t, nacdrSCALE/Enac , color = 'pink', label = 'old Drive')
 
 
         # axs[1,1].plot(t, av, color = 'sienna', label = 'AV')
@@ -276,18 +277,16 @@ def sub_plots_ani(t,y0, param_array, save):
         axs[1,2].set_title('Alcohol Consumed',**tfont, fontweight = 'bold', fontsize='14')
         axs[1,2].set_ylabel('Volume (mL)',**tfont, fontsize='12')
         axs[1,2].set_xlabel('Time (min)',**tfont, fontsize='12')
-        axs[1,2].set_ylim(0,16)
+        axs[1,2].set_ylim(0,20)
 
-        plt.subplots_adjust(wspace=0.3, hspace=0.3)
+        plt.subplots_adjust(wspace=0.3, hspace=0.4)
         return axs
    ani = animation.FuncAnimation(f, update, frames=len(param_array), interval=1,repeat=False)
    if save =='yes':
         writer = PillowWriter(fps=30)
-        ani.save('/Users/amyrude/Downloads/DAmodulateNAc.gif', writer=writer)
+        ani.save('/Users/amyrude/Downloads/DAmodulateNAcparam.gif', writer=writer)
    plt.show()
 
-param_array = np.linspace(1, 2.5, 100)
-sub_plots_ani(t,y0, param_array, 'no')
 
 def vector_field(y0, y_traj, t, n,m, name, save): 
     #arguments: initial conditions, t, n/m=neuron population numbers (same as IC), name = ['pop one', 'pop two'], save =='yes' if you want to save]
@@ -377,7 +376,7 @@ def vector_field(y0, y_traj, t, n,m, name, save):
         ani.save('/Users/amyrude/Downloads/seek_binge_phaseplane.gif', writer=writer)
     plt.show()
 
-# sub_plots(t, y0, 'no', csTOvta)
+
 
 
 # time = np.linspace(0,50,3)
@@ -385,17 +384,6 @@ time = np.array([0,15,30])
 def td_vect(t,y0, time):
     fig = plt.figure(figsize=(8, 12))
     ax = plt.axes(projection='3d')
-    # x_scale=2
-    # y_scale=2
-    # z_scale=4
-    # scale=np.diag([x_scale, y_scale, z_scale, 1.0])
-    # scale=scale*(1.0/scale.max())
-    # scale[3,3]=1.0
-
-    # def short_proj():
-    #     return np.dot(Axes3D.get_proj(ax), scale)
-
-    # ax.get_proj=short_proj
     ax.set_xlabel('Seek', **tfont, fontsize = 15)
     ax.set_ylabel('Binge', **tfont, fontsize = 15)
     ax.set_zlabel('Time',rotation = 90, **tfont, fontsize = 15)
@@ -412,6 +400,15 @@ def td_vect(t,y0, time):
     ax.zaxis._axinfo["grid"]['color'] =  (1,1,1,0)
     init = binge_model(time, y0, csTOvta)['Int'] # Solving the system with IC
     y_plot = binge_model(t, y0, csTOvta)['Int']
+    new_traj = binge_model(t,[0.7, 0, 0.7, 0.1, 0, 0, 0, 0.6, -7],csTOvta)['Int']
+    two_traj = binge_model(t,[0, 0, 1, 0.1, 0, 0, 0, 0.6, -7],csTOvta)['Int']
+
+    seek_traj = new_traj[0]
+    binge_traj = new_traj[2]
+
+    seek_new = two_traj[0]
+    binge_new = two_traj[2]
+
     seek_plot = y_plot[0]
     binge_plot = y_plot[2]
     for k in np.arange(len(time)):
@@ -420,7 +417,7 @@ def td_vect(t,y0, time):
         dbinge_array = np.zeros(binge_array.shape)
         for i in np.arange(len(seek_array)):
             for j in np.arange(len(binge_array)):
-                y = [init[0, k], init[1, k], init[2, k], init[3, k], init[4,k], init[5, k], init[6, k], init[7, k]]
+                y = [init[0, k], init[1, k], init[2, k], init[3, k], init[4,k], init[5, k], init[6, k], init[7, k], init[8,k]]
                 y[0] = seek_array[i, j,0]
                 y[2] = binge_array[i, j,0]
                 deriv = der_model(time, y, csTOvta)
@@ -428,8 +425,14 @@ def td_vect(t,y0, time):
                 dseek_array[i,j] = seek_d[k]
                 dbinge_array[i,j] = deriv[2]
         ax.quiver(seek_array, binge_array, time[k]/200, dseek_array, dbinge_array, 0 ,length = 0.09, alpha = 0.6, arrow_length_ratio = 0.15)
-        ax.plot3D(seek_plot, binge_plot, t/200, color = 'black', linewidth = 2)
+        ax.plot3D(seek_plot, binge_plot, t/200, color = 'black', linewidth = 1.8)
+        ax.plot3D(seek_traj, binge_traj, t/200, color = 'black', linewidth = 1.8)
+        ax.plot3D(seek_new, binge_new, t/200, color = 'black', linewidth = 1.8)
+
         ax.scatter3D(seek_plot[0], binge_plot[0], t[0]/200, color = 'red', linewidth = 5)
+        ax.scatter3D(seek_traj[0], binge_traj[0], t[0]/200, color = 'red', linewidth = 5)
+        ax.scatter3D(seek_new[0], binge_new[0], t[0]/200, color = 'red', linewidth = 5)
+
         ax.scatter3D(seek_plot[-1], binge_plot[-1], t[-1]/200, color = 'black', linewidth = 2.5, marker = '^')
         # ax.scatter3D(seek_plot[int(len(t)/2)], binge_plot[int(len(t)/2)], t[int(len(t)/2)]/200, color = 'red', linewidth = 5)
 
@@ -437,5 +440,6 @@ def td_vect(t,y0, time):
 
     plt.show()
     return ax
-
-# td_vect(t,y0,time)
+sub_plots(t, y0, 'no', csTOvta)
+# sub_plots_ani(t,y0, param_array, 'no')
+td_vect(t,y0,time)
