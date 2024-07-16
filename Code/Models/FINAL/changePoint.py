@@ -1,0 +1,2 @@
+from final import *
+runGraphs()

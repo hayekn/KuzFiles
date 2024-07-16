@@ -134,5 +134,5 @@ def runGraphs(time=120, fuzz=False, save=False, anim=False):
     plt.tight_layout()
     plt.show()
 
-runGraphs(100, anim=True)
+#runGraphs(100, anim=True)
 
