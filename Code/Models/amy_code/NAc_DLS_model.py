@@ -17,13 +17,13 @@ tfont = {'fontname':'Times New Roman'}
 #Specify IC and time step
 y0 = [0.2, 0, 0.1, 0.1, 0, 0, 0, 0.6, -7] #seek, setp, binge,  nac, dls, ALCOHOL, vta, proxy
 y_traj = [0.5, 0, 0.1, 0.2, 0, 0, 0, 0.2] #seek, setp, binge, nac, dls, ALCOHOL, vta, proxy; used in phase plane analysis
-t= np.linspace(0,30,500)  
+t= np.linspace(0,50,500)  
 
 ## Defining the Parameters
 #EXCITABILITIES
 Ebinge = 5
-Esetp = 1.5
-Eseek= 5
+Esetp = 1.8
+Eseek= 5. 
 Evta = 2
 Edls = 3
 
@@ -37,22 +37,23 @@ dlsTAU = 1
 
 
 #DRIVES
-seekDRIVE = 1
+seekDRIVE = 2.5
 bingeDRIVE = 1
 setpDRIVE = 1
 vtaDRIVE = 3.5
 dlsDRIVE = 1.4
 
 #SYNAPTIC WEIGHTS
-spTOseek = 8
+spTOseek = 4
 seekTOnac = 2.5
 seekTObin = 1.75
 binTOseek = 1.75
 binTOnac = 2.5
 vtaTOnac = 2.5
-csTOseek = 5
+csTOseek = 4
 csTOvta = 4.2 # modulate this connection to change magnitude of DA peak (3 to 5.5)
 csTOdls = 2
+dlsExcite = 3
 
 
 #EXTRAS
@@ -84,10 +85,10 @@ def binge_model(t, y0, param):
 
         CS = np.heaviside(csDUR-t, 0.5) #Conditioned Stimulus
         dseek_dt = (-seek + F(Eseek * (binTOseek * binge + csTOseek * CS - spTOseek * setp - seekDRIVE))) / seekTAU #Seek Activity
-        dsetp_dt = (-setp + F(Esetp * (0.9*nac + dlsSCALE * dls - setpDRIVE - setpDRIVE))) / setpTAU #Alcohol Variable
+        dsetp_dt = (-setp + F(Esetp * (nac + dlsSCALE * dls - setpDRIVE ))) / setpTAU #Alcohol Variable
         dbinge_dt = (-binge + F(Ebinge * (seekTObin * seek - bingeDRIVE))) / bingeTAU #Binge Activity
         dnac_dt = (-nac + F(Enac * (vtaTOnac * vta + seekTOnac * seek + binTOnac * binge + nacDRIVE))) / nacTAU #NAc Activity
-        ddls_dt = (-dls + F(Edls * ( 3*dls + csTOdls * CS - dlsDRIVE)))/ dlsTAU
+        ddls_dt = (-dls + F(Edls * (dlsExcite*dls + csTOdls * CS - dlsDRIVE)))/ dlsTAU
         dALCOHOL_dt = nac + dlsSCALE * dls # Alcohol consumed 
         dvta_dt = (-vta + F(Evta*( csTOvta * CS - vtaDRIVE))) / vtaTAU #VTA activity
        
@@ -440,6 +441,6 @@ def td_vect(t,y0, time):
 
     plt.show()
     return ax
-sub_plots(t, y0, 'no', csTOvta)
-# sub_plots_ani(t,y0, param_array, 'no')
-td_vect(t,y0,time)
+# sub_plots(t, y0, 'no', csTOvta)
+sub_plots_ani(t,y0, param_array, 'no')
+# td_vect(t,y0,time)
