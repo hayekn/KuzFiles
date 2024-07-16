@@ -47,7 +47,7 @@ def xppaut_model(t, fuzz, nsLEVEL=nsLEVEL, csTOvta=csTOvta):
     return {'Int':y, 'Der':[model(t,y0) for t in t]}
 
 def runGraphs(time=120, fuzz=False, save=False, anim=False):
-    fig, axs = plt.subplots(2, 3, figsize=(11, 8))
+    fig, axs = plt.subplots(3, 3, figsize=(11, 8))
     t = np.linspace(0, time, 300)
     y = xppaut_model(t, fuzz, nsLEVEL=0)
     
@@ -70,7 +70,7 @@ def runGraphs(time=120, fuzz=False, save=False, anim=False):
     neg = axs[1, 2].plot(t, ns, label="NS")[0] #ALC OR NEGSTIM OR HEAVISIDE, CHANGE MANUALLY
     cond = axs[1, 2].plot(t, cs, label="CS")[0]
     excNac = axs[1,2].plot(t, y['Int'][7], label="Enac")[0]
-    driNac = axs[1, 2].plot(t, np.abs(y['Int'][8]), label='driveNAC')[0]
+    driNac = axs[2, 0].plot(t, y['Int'][8], label='driveNAC')[0]
     axs[1,2].set_title("Conditioned/Negative Stimulus")
     fig.suptitle("Seek <--> Insula; Enac tracks dopamine, decays to baseline (.8); DLS bistable, turned on by CS; no AV variable")
     #Plot formatting
@@ -81,8 +81,12 @@ def runGraphs(time=120, fuzz=False, save=False, anim=False):
                   continue
               if i==1 and j==2:
                     continue
+              if i==0 and j==2:
+                   continue
               axs[i, j].set_ylim(0, 1)
-              
+    
+
+    axs[1, 2].legend()
     axs[1, 0].set_xlabel('T (min)')
     axs[1, 1].set_xlabel('T (min)')
     axs[1, 2].set_xlabel('T (min)')
@@ -90,7 +94,7 @@ def runGraphs(time=120, fuzz=False, save=False, anim=False):
     frames = 100
 
     def update(frame):
-        y = xppaut_model(t, fuzz, nsLEVEL=0, csTOvta=2*(frame/frames))
+        y = xppaut_model(t, fuzz, nsLEVEL=0, csTOvta=1.5*(frame/frames)+1)
         sp.set_data(t, y['Int'][0])
         seek.set_data(t, y['Int'][1])
         comb.set_data(t, (y['Int'][0]+y['Int'][1])/2)
@@ -101,7 +105,7 @@ def runGraphs(time=120, fuzz=False, save=False, anim=False):
         da.set_data(t, y['Int'][5])
         alc.set_data(t, y['Int'][6])
         excNac.set_data(t, y['Int'][7])
-        driNac.set_data(t, np.abs(y['Int'][8]))
+        driNac.set_data(t, y['Int'][8])
 
 
         return (sp, seek, nac)
