@@ -31,15 +31,13 @@ dlsDRIVE = -2
 spTOseek = 13
 seekTOnac = 4
 seekTObin = 2.5
-seekTOseek = 4
-seekTOdls = 3
 binTOnac = 1
 binTOseek = 2.5
 csTOvta = 3
 #cstoseek = 6
 csTOdls = 3
 csTOseek = 4
-nacTOsetp = .4 #BINGE TIME
+nacTOsetp = .3 #BINGE TIME
 vtaTOnac = 0
 dlsTOdls = 5
 
@@ -54,10 +52,6 @@ nsTOnseek = 1
 nsTObin = 0
 
 #EXTRAS
-TOLERANCE = 20
-daFACTOR = 0.2
-decayFac = .001
-setpDELTA = 1
 csDUR = 3
 
 dlsLEVEL = .05

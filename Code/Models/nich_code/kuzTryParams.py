@@ -10,7 +10,7 @@ Enac = 1.84
 Eav = 1
 Eseek = 2
 Esetp = 5
-Evta = 12
+Evta = 3
 Edls = 2
 
 #TIMESCALES
