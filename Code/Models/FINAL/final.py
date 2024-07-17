@@ -52,7 +52,7 @@ t = np.linspace(0,120,500)
 def F(x): # + = excitatory, - = inhibitory
         return 1 / (1 + np.exp(-x))
 
-def xppaut_model(t, fuzz=False, csTOvta=csTOvta, y=y0):
+def xppaut_model(t, fuzz=False, csTOvta=csTOvta, seekTObin=seekTObin, binTOseek=binTOseek):
     def model(t, y):
         setp, seek, binge, nac, dls, vta, ALCOHOL, Enac, nacDRIVE = y
         if fuzz:
