@@ -30,7 +30,7 @@ binTOseek = 2.5
 binTOnac = 1
 vtaTOnac = 2.5
 csTOseek = 4
-csTOvta = 3 # modulate this connection to change magnitude of DA peak (3 to 5.5)
+csTOvta = 1 # modulate this connection to change magnitude of DA peak (3 to 5.5)
 csTOdls = 3
 nacTOsetp = .1 #length of front-loading
 dlsTOdls = 5
@@ -134,5 +134,6 @@ def runGraphs(time=120, fuzz=False, save=False, anim=False):
     plt.tight_layout()
     plt.show()
 
-#runGraphs(100, anim=True)
+
+#runGraphs(120)
 
