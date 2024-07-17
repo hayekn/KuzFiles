@@ -33,7 +33,7 @@ binTOseek = 2.5
 binTOnac = 1
 vtaTOnac = 2.5
 csTOseek = 4
-csTOvta = 1.5 # modulate this connection to change magnitude of DA peak (1 to 3)
+csTOvta = 2.5 # modulate this connection to change magnitude of DA peak (1 to 3)
 csTOdls = 3
 nacTOsetp = .1 #length of front-loading
 dlsTOdls = 5
@@ -94,7 +94,6 @@ def der_model(t, y):
     dvta_dt = (-vta + F(Evta*(csTOvta * cs + vtaDRIVE))) / vtaTAU
     dALCOHOL_dt = (nac+dlsSCALE*dls)
     return [dsetp_dt, dseek_dt, dbinge_dt, dnac_dt, ddls_dt, dvta_dt, dALCOHOL_dt, dEnac_dt, dnacDRIVE_dt]
-
 
 def runGraphs(time=120, fuzz=False, save=False, anim=False):
     fig, axs = plt.subplots(2, 3, figsize=(12, 8))
@@ -164,10 +163,8 @@ def runGraphs(time=120, fuzz=False, save=False, anim=False):
         ani.save('/Users/amyrude/Downloads/DAmodulation.gif', writer=writer)
     plt.show()
 
-
-time = np.array([0,20,40])
-
 def td_vect(t,y0, time):
+    time = np.array([0,20,40])
     fig = plt.figure(figsize=(8, 12))
     ax = plt.axes(projection='3d')
     ax.set_xlabel('Seek', **tfont, fontsize = 15)
@@ -217,42 +214,164 @@ def td_vect(t,y0, time):
         ax.quiver(seek_array, binge_array, time[k]/200, dseek_array, dbinge_array, 0 ,length = 0.1, alpha = 0.6, arrow_length_ratio = 0.15)
         # ax.plot3D(seek_plot, binge_plot, t/200, color = 'black', linewidth = 1.8)
         # ax.plot3D(seek_traj, binge_traj, t/2500, color = 'black', linewidth = 1.8)
-        # ax.plot3D(seek_new, binge_new, t/200, color = 'black', linewidth = 1.8)
-
-        
+        # ax.plot3D(seek_new, binge_new, t/200, color = 'black', linewidth = 1.8)    
 
         # ax.scatter3D(seek_plot[-1], binge_plot[-1], t[-1]/200, color = 'black', linewidth = 2.5, marker = '^')
-
     plt.show()
     return ax
 
-# td_vect(t, y0, time)
+def ind_plots(graph, t=t):
+    #graph: PFC, Insula, STR, VTA, Alc, Param
+    y = xppaut_model(t, y0)['Int']
+    f, ax = plt.subplots(1, 2, sharey=True, facecolor='w', gridspec_kw={'width_ratios': [10, 1]})
+    
+    if graph == 'PFC':
+        for z in range(2):
+            ax[z].plot(t,y[0], label="Setpoint", color = 'royalblue')
+            ax[z].plot(t, y[1], label="Seek", color = 'midnightblue')
+            ax[z].plot(t, (y[0]+y[1])/2, '--', label="mPFC Average", color = 'lightblue')
+            f.suptitle('mPFC Activity', fontsize = 15, fontweight = 'bold')
+    if graph == 'Insula':
+        for z in range(2):
+            ax[z].plot(t, y[2], label="Binge", color = 'mediumseagreen')
+            f.suptitle('Insular Activity', fontsize = 15, fontweight = 'bold')
+    if graph == 'STR':
+        for z in range(2):
+            ax[z].plot(t, y[3], label="NAc", color = 'maroon')
+            ax[z].plot(t, y[4], label="DLS", color='red')
+            ax[z].plot(t, y[3]+y[4], '--',label="Striatum", color='tomato')
+            f.suptitle('Striatal Activity', fontsize = 15, fontweight = 'bold')
+    if graph == 'VTA':
+        for z in range(2):
+            ax[z].plot(t, y[5], label="VTA", color = 'lightcoral')
+            f.suptitle('VTA Activity', fontsize = 15, fontweight = 'bold')
+    if graph == 'Alc':
+        f = plt.figure()
+        plt.plot(t, y[6], label='Alcohol Vol.', color = 'red')
+        plt.xlabel('Time (mins)')
+        plt.ylabel('Volume')
+        plt.title('Alcohol Consumption', fontsize = 15, fontweight = 'bold')
+        plt.legend()
+        plt.show()
+    if graph == "Param":
+        f = plt.figure()
+        plt.plot(t, y[7], label="$E_{NAc}$")[0]
+        plt.plot(t, abs(y[8]), label='|$drive_{NAc}$|')[0]
+        plt.title("DA Modulation of NAc Parameters", fontsize = 15, fontweight = 'bold')
+        plt.legend()
+        plt.xlabel('Time (mins)')
+        plt.show()
 
+    if graph == 'PFC' or 'Insula' or 'STR' or 'VTA':
+        ax[0].set_xlim(0, 40)
+        ax[1].set_xlim(115, 120)
+        ax[0].spines['right'].set_visible(False)
+        ax[1].spines['left'].set_visible(False)
+        ax[1].tick_params(left = False) 
+        d = .015  
+        kwargs = dict(transform=ax[0].transAxes, color='k', clip_on=False)
+        ax[0].plot((1-d, 1+d), (-d, +d), **kwargs)
+        ax[0].plot((1-d, 1+d), (1-d, 1+d), **kwargs)
+        kwargs.update(transform=ax[1].transAxes)  # switch to the bottom axes
+        ax[1].plot((-d-0.3, +d), (1-d, 1+d), **kwargs)
+        ax[1].plot((-d-0.3, +d), (-d, +d), **kwargs)
+        ax[0].set_xlabel('Time (mins)')
+        ax[0].set_ylabel('Firing Rate (Hz)', labelpad = 10)
+        ax[0].xaxis.set_label_coords(0.6, -0.09)
+        ax[1].legend()
+        plt.show()
+
+def DA_graphs(F, S, M, L):
+    fail = xppaut_model(t,y0,F)['Int']
+    low = xppaut_model(t,y0,S)['Int']
+    medium = xppaut_model(t,y0,M)['Int']
+    high = xppaut_model(t,y0, L)['Int']
+    
+    fig, ax = plt.subplots(1,2, figsize = (10,5))
+    ax[0].plot(t, fail[5], label = 'No DA')
+    ax[0].plot(t, low[5], label = 'Low DA')
+    ax[0].plot(t, medium[5], label = 'Medium DA')
+    ax[0].plot(t, high[5], label = 'High DA')
+    ax[0].set_xlim(0,10)
+    ax[0].set_xlabel('Time (mins)', fontsize ='12')
+    ax[0].set_ylabel('Firing Rate (Hz)', fontsize ='12') 
+    ax[1].plot(t, fail[6], label = 'No DA')
+    ax[1].plot(t, low[6], label = 'Low DA')
+    ax[1].plot(t, medium[6], label = 'Medium DA')
+    ax[1].plot(t, high[6], label = 'High DA')
+    ax[1].set_ylim(0,30)
+    ax[1].set_xlabel('Time (mins)', fontsize ='12')
+    ax[1].set_ylabel('Volume', fontsize ='12')
+    ax[1].legend()
+    plt.tight_layout()
+    plt.show()
+    
+    
+    param_array = np.linspace(0, 2.5, 100)
+    final_alcohol = []
+    peak_vta = []
+    peak_nac = []
+
+    for n in np.arange(len(param_array)):
+         y= xppaut_model(t, y0, param_array[n])['Int']
+         alc = y[6]
+         final_alcohol.append(alc[-1])
+         peak_vta.append(np.max(y[5]))
+         peak_nac.append(np.max(y[3]))
+
+    fig, ax1 = plt.subplots(figsize = (8,6))
+    color = 'tab:red'
+    ax1.set_xlabel('Peak VTA Activity (Hz)', fontsize = '12')
+    ax1.set_ylabel('Total Alcohol Consumed', color=color, fontsize = '12')
+    ax1.scatter(peak_vta, final_alcohol, color=color, linewidths = 0.05)
+    ax1.tick_params(axis='y', labelcolor=color)
+
+    ax2 = ax1.twinx()  
+    color = 'tab:blue'
+    ax2.set_ylabel('Peak NAc Activity (Hz)', color=color, fontsize = '12', rotation = -90, labelpad = 20)  
+    ax2.scatter(peak_vta, peak_nac, color=color, linewidths = 0.05)
+    ax2.tick_params(axis='y', labelcolor=color)
+
+    plt.title('Effect of DA Release', fontsize = '15', fontweight = 'bold')
+    fig.tight_layout()  
+    plt.show()
+
+
+DA_graphs(0.5, 1.5, 1.65, 2)
+ind_plots('PFC') #graph: PFC, Insula, STR, VTA, Alc, Param
+# td_vect(t, y0)
 # runGraphs(120, anim=True)
 
 
-low = xppaut_model(t,y0, 1)['Int'][6]
-low_vta = xppaut_model(t,y0, 1)['Int'][5]
-medium = xppaut_model(t,y0,1.65)['Int'][6]
-medium_vta = xppaut_model(t,y0,1.65)['Int'][5]
-high = xppaut_model(t,y0, 2)['Int'][6]
-high_vta = xppaut_model(t,y0, 2)['Int'][5]
 
-fig, ax = plt.subplots(1,2, figsize = (8,5))
-ax[1].plot(t, low, label = 'Low DA')
-ax[1].plot(t, medium, label = 'Medium DA')
-ax[1].plot(t, high, label = 'High DA')
-ax[1].set_xlabel('Time (mins)')
-ax[1].set_ylabel('Volume')
-ax[1].legend()
-ax[0].plot(t, low_vta, label = 'Low DA')
-ax[0].plot(t, medium_vta, label = 'Medium DA')
-ax[0].plot(t, high_vta, label = 'High DA')
-ax[0].set_xlim(0,10)
-ax[0].set_xlabel('Time (mins)')
-ax[0].set_ylabel('VTA')
 
-plt.show()
+
+
+
+
+
+# low = xppaut_model(t,y0, 1)['Int'][6]
+# low_vta = xppaut_model(t,y0, 1)['Int'][5]
+# medium = xppaut_model(t,y0,1.65)['Int'][6]
+# medium_vta = xppaut_model(t,y0,1.65)['Int'][5]
+# high = xppaut_model(t,y0, 2)['Int'][6]
+# high_vta = xppaut_model(t,y0, 2)['Int'][5]
+
+# fig, ax = plt.subplots(1,2, figsize = (8,5))
+# ax[1].plot(t, low, label = 'Low DA')
+# ax[1].plot(t, medium, label = 'Medium DA')
+# ax[1].plot(t, high, label = 'High DA')
+# ax[1].set_xlabel('Time (mins)')
+# ax[1].set_ylabel('Volume')
+# ax[1].legend()
+# ax[0].plot(t, low_vta, label = 'Low DA')
+# ax[0].plot(t, medium_vta, label = 'Medium DA')
+# ax[0].plot(t, high_vta, label = 'High DA')
+# ax[0].set_xlim(0,10)
+# ax[0].set_xlabel('Time (mins)')
+# ax[0].set_ylabel('VTA')
+
+# plt.show()
 
 
 

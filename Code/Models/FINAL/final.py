@@ -46,13 +46,13 @@ driveMEAN = -7
 dlsSCALE = 0.1
 
 y0 = [0.1, 0, 0.1, 0.1, 0, 0, 0, EnacMEAN, driveMEAN]
-t = np.linspace(0,120,5)
+t = np.linspace(0,120,500)
 #setp, seek, binge, nac, dls, vta, ALCOHOL, Enac, nacDRIVE
 
 def F(x): # + = excitatory, - = inhibitory
         return 1 / (1 + np.exp(-x))
 
-def xppaut_model(t, fuzz, csTOvta=csTOvta):
+def xppaut_model(t, fuzz=False, csTOvta=csTOvta, y=y0):
     def model(t, y):
         setp, seek, binge, nac, dls, vta, ALCOHOL, Enac, nacDRIVE = y
         if fuzz:
@@ -146,5 +146,5 @@ def runGraphs(time=120, fuzz=False, save=False, anim=False):
     plt.show()
 
 
-runGraphs(120)
+# runGraphs(120)
 
