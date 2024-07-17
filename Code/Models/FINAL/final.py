@@ -25,8 +25,8 @@ dlsDRIVE = -2
 
 spTOseek = 13
 seekTOnac = 4
-seekTObin = 2.5
-binTOseek = 2.5
+seekTObin = 6
+binTOseek = 6
 binTOnac = 1
 vtaTOnac = 2.5
 csTOseek = 4
@@ -146,5 +146,5 @@ def runGraphs(time=120, fuzz=False, anim=False):
     plt.show()
 
 
-#runGraphs(80)
+runGraphs(10000)
 
