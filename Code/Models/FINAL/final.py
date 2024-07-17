@@ -30,7 +30,7 @@ binTOseek = 2.5
 binTOnac = 1
 vtaTOnac = 2.5
 csTOseek = 4
-csTOvta = 2.5 # modulate this connection to change magnitude of DA peak (3 to 5.5)
+csTOvta = 2.5 # modulate this connection to change magnitude of DA peak
 csTOdls = 3
 nacTOsetp = .1 #length of front-loading
 dlsTOdls = 5
@@ -83,7 +83,7 @@ def xppaut_model(t, fuzz=False, csTOvta=csTOvta, y=y0):
     return {'Int':y, 'Der':[model(t,y0) for t in t], 'CS':cs}
 
 
-def runGraphs(time=120, fuzz=False, save=False, anim=False):
+def runGraphs(time=120, fuzz=False, anim=False):
     fig, axs = plt.subplots(2, 3, figsize=(12, 8))
     t = np.linspace(0, time, 300)
     y = xppaut_model(t, fuzz)
@@ -146,5 +146,5 @@ def runGraphs(time=120, fuzz=False, save=False, anim=False):
     plt.show()
 
 
-# runGraphs(120)
+#runGraphs(80)
 
