@@ -38,7 +38,7 @@ def makeGraphs():
     with open("Code/Models/FINAL/changePoint.npy", "rb") as f:
             A = np.load(f)
     A = [a*(120/grad) for a in A]
-    fig, axs = plt.subplots(2, 3, figsize=(12, 8))
+    fig, axs = plt.subplots(1, 2, figsize=(12, 4))
 
     C = np.linspace(1, top, grad)
     M = []
@@ -48,6 +48,17 @@ def makeGraphs():
         M.append(np.max(vta))
         I.append(integrate.simpson(vta, x=t))
 
+    axs[0].plot(I, A, color='purple')
+    axs[0].set_ylabel("Change Point (min)")
+    axs[0].set_xlabel("Total DA Release")
+    axs[1].plot(I,  loadSlopeArray())
+    axs[1].set_ylabel("Maintenance Coefficient")
+    axs[1].set_xlabel("Total DA Release")
+
+    axs[0].set_ylim(0, 45)
+    axs[1].set_ylim(0, 10)
+    plt.show()
+    return
     axs[0,0].set_ylabel("Change Point (min)")
     axs[0,0].set_xlabel("Sensitivity of VTA")
     axs[0,0].plot(C, A)
@@ -92,11 +103,11 @@ def makeGraphs():
     plt.show()
 
 
-grad = 1000
+grad = 1500
 top = 3
 t = np.linspace(0, 120, grad)
 
-loadChangeArray()
+#loadChangeArray()
 makeGraphs()
 
 #loadArray()
