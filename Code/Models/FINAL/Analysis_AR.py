@@ -246,12 +246,17 @@ def ind_plots(graph, t=t):
             ax[z].plot(t, y[5], label="VTA", color = 'lightcoral')
             f.suptitle('VTA Activity', fontsize = 15, fontweight = 'bold')
     if graph == 'Alc':
-        f = plt.figure()
-        plt.plot(t, y[6], label='Alcohol Vol.', color = 'red')
-        plt.xlabel('Time (mins)')
-        plt.ylabel('Volume')
-        plt.title('Alcohol Consumption', fontsize = 15, fontweight = 'bold')
-        plt.legend()
+        f = plt.figure(figsize = (14,6))
+        plt.plot(t, y[6],  color = 'black', linewidth = 4)
+        plt.xlabel('Time (mins)', fontsize = 30)
+        plt.ylabel('Volume', fontsize = 30)
+        # plt.title('Alcohol Consumption', fontsize = 15, fontweight = 'bold')
+        plt.fill_between(t, 30, where=[(t >= 0) and (t <= 20.1) for t in t], color = 'red', alpha = 0.25, linewidth = 0.05, label = 'Front-Loading') 
+        plt.fill_between(t, 30, where=[(t >= 19.9) and (t <= 120) for t in t], color = 'grey', alpha = 0.15, linewidth = 0.05, label = 'Maintenence') 
+        plt.xlim(0,80)
+        leg = plt.legend(framealpha = 1, fontsize = 28, loc = 'lower right')
+        # for lh in leg.legendHandles: 
+        #     lh.set_alpha(1)
         plt.show()
     if graph == "Param":
         f = plt.figure()
@@ -287,7 +292,7 @@ def DA_graphs(F, S, M, L):
     medium = xppaut_model(t,y0,M)['Int']
     high = xppaut_model(t,y0, L)['Int']
     
-    fig, ax = plt.subplots(1,2, figsize = (10,5))
+    fig, ax = plt.subplots(1,2, figsize = (10,2))
     ax[0].plot(t, fail[5], label = 'No DA')
     ax[0].plot(t, low[5], label = 'Low DA')
     ax[0].plot(t, medium[5], label = 'Medium DA')
@@ -337,8 +342,8 @@ def DA_graphs(F, S, M, L):
     plt.show()
 
 
-DA_graphs(0.5, 1.5, 1.65, 2)
-ind_plots('PFC') #graph: PFC, Insula, STR, VTA, Alc, Param
+# DA_graphs(0.5, 1.5, 1.65, 2)
+ind_plots('Alc') #graph: PFC, Insula, STR, VTA, Alc, Param
 # td_vect(t, y0)
 # runGraphs(120, anim=True)
 
