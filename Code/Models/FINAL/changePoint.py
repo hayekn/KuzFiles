@@ -48,17 +48,28 @@ def makeGraphs():
         M.append(np.max(vta))
         I.append(integrate.simpson(vta, x=t))
 
-    axs[0].plot(I, A, color='purple')
-    axs[0].set_ylabel("Change Point (min)")
-    axs[0].set_xlabel("Total DA Release")
-    axs[1].plot(I,  loadSlopeArray())
+    S = loadSlopeArray()
+    axs[0].plot(C,  S, color='black')
+    axs[0].set_ylabel("Maintenance Coefficient")
+    axs[0].set_xlabel("csTOvta")
+
+    axs[1].plot(I,  S, color='black')
     axs[1].set_ylabel("Maintenance Coefficient")
     axs[1].set_xlabel("Total DA Release")
 
-    axs[0].set_ylim(0, 45)
+    axs[0].set_ylim(0, 10)
     axs[1].set_ylim(0, 10)
     plt.show()
     return
+
+    axs[0].plot(I, A, color='black')
+    axs[0].set_ylabel("Change Point (min)")
+    axs[0].set_xlabel("Total DA Release")
+
+    axs[1].plot(C, A, color='black')
+    axs[1].set_ylabel("Change Point (min)")
+    axs[1].set_xlabel("csTOvta")
+
     axs[0,0].set_ylabel("Change Point (min)")
     axs[0,0].set_xlabel("Sensitivity of VTA")
     axs[0,0].plot(C, A)

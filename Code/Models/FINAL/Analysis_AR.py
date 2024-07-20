@@ -474,7 +474,6 @@ def weight_der():
     plt.show()
 
 
-
 def td_vect_ani(t,y0, save = False):
     time = np.array([0,20,40])
     fig = plt.figure(figsize=(8, 12))
@@ -528,7 +527,11 @@ def td_vect_ani(t,y0, save = False):
 # td_vect_ani(t,y0)    
 # td_vect(t,y0)
 # DA_graphs(1.35, 1.5, 1.65, 2, save=True)
-# ind_plots('Alc', save=True) #graph: PFC, Insula, STR, VTA, Alc, Param
+# ind_plots('Cortex', save=True) #graph: PFC, Insula, STR, VTA, Alc, Param
+
+
+
+#ignore
 # import seaborn as sbn
 # test = np.array([[1,1,2],[2,2,4]])
 # sbn.heatmap(test, cmap = 'Greys')
