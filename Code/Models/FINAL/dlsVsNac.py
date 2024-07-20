@@ -2,25 +2,30 @@ from final import *
 
 plt.rcParams.update({
         "text.usetex": True,
-        'font.size': 22
+        'font.size': 25
     })
 
-t = np.linspace(0, 120, 300)
+t = np.linspace(0, 120, 800)
 nac = xppaut_model(t, False)['Int'][3]
 dls = xppaut_model(t, False)['Int'][4]
 
 result = 100*(dls/(dls+nac))
-fig, ax = plt.subplots(1, 2, sharey=True, facecolor='w', gridspec_kw={'width_ratios': [10, 1]}, figsize=(8, 8))
+
+fig, ax = plt.subplots(1, 2, sharey=True, facecolor='w', gridspec_kw={'width_ratios': [10, 1]}, figsize=(10, 7))
 for i in range(2):
-    ax[i].plot(t, result, label="DLS")
-    ax[i].plot(t, 100-result, label="NAc")
+    ax[i].plot(t, result, label="DLS", linewidth=4, color='red')
+    ax[i].plot(t, 100-result, label="NAc", linewidth=4, color='maroon')
 
-plt.xticks(fontsize=22)
-plt.yticks(fontsize=22)
 
+ax[0].set_ylim(0, 100)
 ax[0].set_xlim(0, 40)
 ax[1].set_xlim(115, 120)
-ax[1].set_xticks([120])
+
+n=26
+ax[1].set_xticks([120], ['120'], fontsize=n)
+ax[0].set_yticks(np.arange(0, 101, 20), list(map(str, np.arange(0, 101, 20))), fontsize=n)
+ax[0].set_xticks([0, 10, 20, 30, 40], ['0', '10', '20', '30', '40'], fontsize=n)
+
 ax[0].spines['right'].set_visible(False)
 ax[1].spines['left'].set_visible(False)
 ax[1].tick_params(left = False) 
@@ -38,7 +43,8 @@ ax[0].set_ylabel('Striatum Load (\%)')
 ax[0].xaxis.set_label_coords(0.6, -0.09)
 
 ax[0].fill_between(t, 100, where=[(t >= 0) and (t <= 3) for t in t], color = 'red', alpha = 0.15, linewidth = 0.05, label='CS') 
+ax[1].fill_between(t, 100, where=[(t >= 0) and (t <= 3) for t in t], color = 'red', alpha = 0.15, linewidth = 0.05, label='CS') 
 plt.legend()
-plt.savefig("Code/Models/FINAL/Pics/dlsFig.png", transparent=False, dpi=400)
+plt.savefig("Code/Models/FINAL/Pics/dlsFig.png", transparent=True, dpi=400)
 
 
