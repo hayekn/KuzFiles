@@ -4,6 +4,13 @@ import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 import matplotlib.animation as animation
 
+plt.rcParams.update({
+        "text.usetex": True,
+        "font.family": "Helvetica",
+        'text.latex.preamble': 
+        r'\usepackage{bm}'
+})
+
 Ebinge = 2
 Esetp = 1.84
 Eseek= 2
@@ -52,7 +59,7 @@ t = np.linspace(0,120,500)
 def F(x): # + = excitatory, - = inhibitory
         return 1 / (1 + np.exp(-x))
 
-def xppaut_model(t, fuzz=False, csTOvta=csTOvta, seekTObin=seekTObin, binTOseek=binTOseek):
+def xppaut_model(t, fuzz=False, csTOvta=csTOvta, seekTObin=seekTObin, binTOseek=binTOseek, nacTOsetp=nacTOsetp):
     def model(t, y):
         setp, seek, binge, nac, dls, vta, ALCOHOL, Enac, nacDRIVE = y
         if fuzz:

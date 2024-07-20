@@ -55,7 +55,7 @@ t = np.linspace(0,120,500)
 def F(x): # + = excitatory, - = inhibitory
         return 1 / (1 + np.exp(-x))
 
-def xppaut_model(t,y, csTOvta=csTOvta):
+def xppaut_model(t,y, csTOvta=csTOvta, seekTObin=seekTObin, binTOseek=binTOseek):
     def model(t, y):
         setp, seek, binge, nac, dls, vta, ALCOHOL, Enac, nacDRIVE = y
         cs = np.heaviside(csDUR-t, .5)
@@ -220,9 +220,9 @@ def td_vect(t,y0, time):
     plt.show()
     return ax
 
-def ind_plots(graph, t=t):
+def ind_plots(graph, t=t, binTOseek=binTOseek, seekTObin=seekTObin):
     #graph: PFC, Insula, STR, VTA, Alc, Param
-    y = xppaut_model(t, y0)['Int']
+    y = xppaut_model(t, y0, binTOseek, seekTObin)['Int']
     f, ax = plt.subplots(1, 2, sharey=True, facecolor='w', gridspec_kw={'width_ratios': [10, 1]})
     
     if graph == 'PFC':
@@ -283,7 +283,14 @@ def ind_plots(graph, t=t):
         ax[0].set_xlabel('Time (mins)')
         ax[0].set_ylabel('Firing Rate (Hz)', labelpad = 10)
         ax[0].xaxis.set_label_coords(0.6, -0.09)
+
+        ax[0].set_ylim(0, 1)
+        ax[1].set_ylim(0, 1)
+
+        ax[0].fill_between(t, 30, where=[(t >= 0) and (t <= 3) for t in t], color = 'grey', alpha = 0.15, linewidth = 0.05, label='CS') 
+
         ax[1].legend()
+
         plt.show()
 
 def DA_graphs(F, S, M, L):
@@ -343,7 +350,7 @@ def DA_graphs(F, S, M, L):
 
 
 # DA_graphs(0.5, 1.5, 1.65, 2)
-ind_plots('Alc') #graph: PFC, Insula, STR, VTA, Alc, Param
+#ind_plots('Alc') #graph: PFC, Insula, STR, VTA, Alc, Param
 # td_vect(t, y0)
 # runGraphs(120, anim=True)
 

@@ -17,26 +17,36 @@ def generate(reso):
             print(str(B[-1]) + " seekTObin=" + str(SB) + " and binTOseek="+ str(BS))
             print(np.size(B)/(reso**2))
 
-    with open("Code/Models/FINAL/cortical.npy", "wb") as f:
+    with open("Code/Models/FINAL/corticalNEW.npy", "wb") as f:
                 B = np.array(B).reshape((reso, reso))
                 np.save(f, B)
 
 def colorGraphs():
-    with open("Code/Models/FINAL/cortical.npy", "rb") as f:
+    with open("Code/Models/FINAL/corticalNEW.npy", "rb") as f:
         B = np.load(f)
 
     cmap = colors.ListedColormap(['white', 'gray', 'black'])
 
-    fig, ax = plt.subplots(figsize=(8, 10))
+    fig, ax = plt.subplots(figsize=(8, 8))
+
+    plt.rcParams.update({
+        "text.usetex": True,
+        'font.size': 26
+    })
 
     cax = ax.imshow(B, extent=[0, 6, 0, 6], origin='lower', cmap=cmap, aspect='auto')
-    cbar = fig.colorbar(cax, ticks=[-1, 0, 1], orientation='horizontal', shrink=.5)
-    cbar.ax.set_xticklabels(['FL Unengaged', 'Two-Phased', 'FL Always Engaged'])
+    #cbar = fig.colorbar(cax, ticks=[-1, 0, 1], orientation='horizontal', shrink=.5)
+    #cbar.ax.set_xticklabels(['FL Unengaged', 'Two-Phased', 'FL Persistent'])
 
-    plt.xlabel('binTOseek')
-    plt.ylabel('seekTObin')
-    plt.title('Binge Characteristic')
-    plt.show()
+    ax.plot(np.linspace(0, 6, 100), np.linspace(0, 6, 100), '--', label=r'$\bm{w_{B \to S} = w_{S \to B}}$', color='red', alpha=.6)
+    ax.legend(framealpha=1)
+
+    plt.yticks(fontsize=26)
+    plt.xticks(range(7), fontsize=26)
+    plt.xlabel(r"$\bm{w_{B \to S}}$", fontsize=26)
+    plt.ylabel(r'$\bm{{w_{S \to B}}}$', fontsize=26)
+    #plt.title('Binge Characteristic')
+    plt.savefig("Code/Models/FINAL/Pics/corticalFig.png", transparent=True, dpi=400)
 
 def linGraphs(reso):
     B = []
@@ -58,5 +68,4 @@ def linGraphs(reso):
     plt.xlabel("Seek <--> Binge Strength")
     plt.show()
 
-linGraphs(150)
-
+colorGraphs()
