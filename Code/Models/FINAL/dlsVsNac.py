@@ -2,7 +2,7 @@ from final import *
 
 plt.rcParams.update({
         "text.usetex": True,
-        'font.size': 25
+        'font.size': 28
     })
 
 t = np.linspace(0, 120, 800)
@@ -11,14 +11,14 @@ dls = xppaut_model(t, False)['Int'][4]
 
 result = 100*(dls/(dls+nac))
 
-fig, ax = plt.subplots(1, 2, sharey=True, facecolor='w', gridspec_kw={'width_ratios': [10, 1]}, figsize=(10, 7))
+fig, ax = plt.subplots(1, 2, sharey=True, facecolor='w', gridspec_kw={'width_ratios': [10, 1]}, figsize=(10, 9))
 for i in range(2):
-    ax[i].plot(t, result, label="DLS", linewidth=4, color='red')
-    ax[i].plot(t, 100-result, label="NAc", linewidth=4, color='maroon')
+    ax[i].plot(t, result, label="DLS", linewidth=4, color='black')
+    ax[i].plot(t, 100-result, marker='v', markersize=15, markevery=15, label="NAc", linewidth=4, color = 'black')
 
 
-ax[0].set_ylim(0, 100)
-ax[0].set_xlim(0, 40)
+ax[0].set_ylim(-2, 100)
+ax[0].set_xlim(-1, 40)
 ax[1].set_xlim(115, 120)
 
 n=26
