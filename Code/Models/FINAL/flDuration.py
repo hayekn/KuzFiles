@@ -1,8 +1,8 @@
 from final import *
 import ruptures as rpt
 from scipy import integrate
-grad = 1000
-W = np.linspace(0, 5, 150)
+grad = 1500
+W = np.linspace(0, 5, 200)
 t = np.linspace(0, 120, grad)
 A = []
 for w in W:
@@ -12,9 +12,15 @@ for w in W:
     result = algo.predict(n_bkps=1)[0]
     A.append(result)
 A = [a*(120/grad) for a in A]
-
-fig, ax = plt.subplots(figsize=(12, 5))
-ax.plot(W, A, color='black')
-ax.set_xlabel("Striatum -> Setp Weight")
-ax.set_ylabel("Front-Loading Duration")
-plt.show()
+plt.rcParams.update({
+        'font.size': 26
+    })
+fig, ax = plt.subplots(figsize=(10, 8))
+n= 24
+plt.xticks(fontsize=n)
+plt.yticks(fontsize=n)
+plt.ylim(0, 35)
+ax.plot(W, A, color='black', linewidth=4)
+ax.set_xlabel(r"$\bm{w_{N \to P}}$", labelpad=10)
+ax.set_ylabel("Front-Loading Duration (min)", labelpad=10)
+plt.savefig("Code/Models/FINAL/Pics/flDur.png", transparent=True, dpi=400)
