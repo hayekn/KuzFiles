@@ -49,7 +49,9 @@ driveMEAN = -7
 dlsSCALE = 0.1
 
 y0 = [0.1, 0, 0.1, 0.1, 0, 0, 0, EnacMEAN, driveMEAN]
-t = np.linspace(0,120,500)
+ytraj = [0.1, 0, 0.1, 0.1, 0, 0, 0, EnacMEAN, driveMEAN]
+
+t = np.linspace(0,1200,500)
 #setp, seek, binge, nac, dls, vta, ALCOHOL, Enac, nacDRIVE
 
 def F(x): # + = excitatory, - = inhibitory
@@ -57,13 +59,13 @@ def F(x): # + = excitatory, - = inhibitory
 
 x= np.linspace(-10,10,500)
 def sig_graphs(x):
-    fig = plt.figure(figsize = (8,7))
-    plt.plot(x, F(x), 'k', linewidth = 5)
-    plt.plot(x,F(-x), '--', color = 'black', linewidth = 5)
-    plt.xlabel('Incoming Projections', fontsize = 25)
-    plt.ylabel('Derivative of Firing Rate', fontsize = 25)
-    plt.xticks(np.array([-10,-5,0,5,10]),fontsize = 20)
-    plt.yticks(np.array([0,0.5,1]),fontsize = 20)
+    fig = plt.figure(figsize = (9,8))
+    plt.plot(x, F(x), 'k', linewidth = 7)
+    plt.plot(x,F(-x), '--', color = 'black', linewidth = 7)
+    plt.xlabel('Inputs', fontsize = 28)
+    plt.ylabel('F', fontsize = 28)
+    plt.xticks(np.array([-10,-5,0,5,10]),fontsize = 25)
+    plt.yticks(np.array([0,0.5,1]),fontsize = 25)
     plt.show()
     fig.savefig('/Users/amyrude/Downloads/sig.png', transparent=True, dpi=350)
 
@@ -260,15 +262,17 @@ def td_vect(t,y0):
 def ind_plots(graph, csTOvta=csTOvta, t=t, save=True):
     #graph: PFC, Insula, STR, VTA, Alc, Param
     y = xppaut_model(t, y0, noise=True)['Int']
-    print(max(y[5]))
     f, ax = plt.subplots(1, 2, figsize = (7,7), sharey=True, facecolor='w', gridspec_kw={'width_ratios': [10, 1]})
 
+    print(max(y[5]))
+
     if graph == 'PFC':
+
         for z in range(2):
-            ax[z].plot(t,y[0], label="Setpoint", color = 'royalblue')
-            ax[z].plot(t, y[1], label="Seek", color = 'midnightblue')
-            ax[z].plot(t, (y[0]+y[1])/2, '--', label="mPFC Average", color = 'lightblue')
-            f.suptitle('mPFC Activity', fontsize = 15, fontweight = 'bold')
+            ax[z].plot(t,y[0], label="Setpoint", color = 'royalblue', linewidth = 4)
+            ax[z].plot(t, y[1], label="Seek", color = 'midnightblue', linewidth = 4)
+            ax[z].plot(t, (y[0]+y[1])/2, '--', label="mPFC Average", color = 'lightblue', linewidth = 4)
+            f.suptitle('mPFC Activity', fontsize = 20, fontweight = 'bold')
             
     if graph == 'Insula':
         for z in range(2):
@@ -319,16 +323,20 @@ def ind_plots(graph, csTOvta=csTOvta, t=t, save=True):
             f.savefig('/Users/amyrude/Downloads/graph_'+graph+'.png',transparent=True, dpi = 350)
     if graph == "Param":
         f = plt.figure()
-        plt.plot(t, y[7], label="$E_{NAc}$")[0]
-        plt.plot(t, abs(y[8]), label='|$drive_{NAc}$|')[0]
-        plt.fill_between(t, 30, where=[(t >= 0) and (t <= 3) for t in t], color = 'grey', alpha = 0.15, linewidth = 0.05, label = 'CS')
+        plt.plot(t, y[7], label="$E_{N}$", linewidth = 3, color = 'red')[0]
+        plt.plot(t, abs(y[8]), label='-$Dr_{N}$', linewidth = 3, color = 'blue')[0]
+        plt.fill_between(t, 30, where=[(t >= 0) and (t <= 3) for t in t], color = 'red', alpha = 0.15, linewidth = 0.05, label = 'CS')
         plt.ylim(0,8)
-        plt.title("DA Modulation of NAc Parameters", fontsize = 15, fontweight = 'bold')
-        plt.legend()
-        plt.xlabel('Time (mins)')
+        # plt.title("DA Modulation of NAc Parameters", fontsize = 20, fontweight = 'bold')
+        plt.legend(fontsize = 13)
+        plt.xlabel('Time (mins)', fontsize = 13)
+        plt.xlim(0,1200)
         plt.show()
+        plt.yticks(fontsize = 12)
+        plt.xticks(fontsize = 12)
+
         if save == True:
-            f.savefig('/Users/amyrude/Downloads/graph_'+graph+'.png',transparent=True, dpi = 350)
+            f.savefig('/Users/amyrude/Downloads/graph_'+graph+'_new.png',transparent=True, dpi = 350)
 
     if graph == 'PFC' or 'Insula' or 'STR' or 'VTA' or 'Cortex' or 'Subcort':
         ax[0].set_xlim(0, 35)
@@ -369,6 +377,7 @@ def ind_plots(graph, csTOvta=csTOvta, t=t, save=True):
 
         plt.show()
 
+# ind_plots('Param', save=True) #graph: PFC, Insula, STR, VTA, Alc, Param
 
 
 def DA_graphs(F, S, M, L, save = False):
@@ -382,7 +391,7 @@ def DA_graphs(F, S, M, L, save = False):
     ax[0].plot(t, low[5],  linewidth = 3,color = 'indigo', alpha = 0.5)
     ax[0].plot(t, medium[5],  linewidth = 3, color = 'indigo', alpha = 0.75)
     ax[0].plot(t, high[5], label = 'VTA', linewidth = 3, color = 'indigo', alpha = 1)
-    ax[0].set_xlim(0,11)
+    ax[0].set_xlim(-2,33)
     ax[0].set_ylim(0,1.1)
     # ax[0].set_xlabel('Time (mins)', fontsize =20)
     ax[0].set_ylabel('Firing Rate (Hz)', fontsize =20) 
@@ -396,7 +405,7 @@ def DA_graphs(F, S, M, L, save = False):
     ax[1].plot(t, low[3],  linewidth = 3, color = 'chocolate', alpha = 0.45)
     ax[1].plot(t, medium[3],  linewidth = 3, color = 'chocolate', alpha = 0.75)
     ax[1].plot(t, high[3], label = 'NAc', linewidth = 3, color = 'chocolate', alpha = 1)
-    ax[1].set_xlim(-1, 31)
+    ax[1].set_xlim(-2, 33)
     ax[1].set_ylim(0,1.1)
     ax[1].get_yaxis().set_visible(False)
     ax[0].legend(fontsize = 20)
@@ -426,10 +435,51 @@ def DA_graphs(F, S, M, L, save = False):
 
     plt.show()
 
-    param_array = np.linspace(0, 2.5, 100)
-    final_alcohol = []
-    peak_vta = []
-    peak_nac = []
+    f, ax = plt.subplots(3,1, figsize = (7,7))
+    for k in range(3):
+        ax[k].clear()
+        ax[k].set_xlim(0,60)
+        ax[k].tick_params(axis="x", labelsize=9) 
+        ax[k].tick_params(axis="y", labelsize=9) 
+
+    ax[0].get_xaxis().set_visible(False)
+    ax[1].get_xaxis().set_visible(False)
+
+    ax[0].plot(t, fail[5],  linewidth = 3, color = 'indigo', alpha = 0.25)
+    ax[0].plot(t, low[5],  linewidth = 3,color = 'indigo', alpha = 0.5)
+    ax[0].plot(t, medium[5],  linewidth = 3, color = 'indigo', alpha = 0.75)
+    ax[0].plot(t, high[5], label = 'VTA', linewidth = 3, color = 'indigo', alpha = 1)
+    ax[1].plot(t, fail[3], linewidth = 3, color = 'chocolate', alpha = 0.25)
+    ax[1].plot(t, low[3],  linewidth = 3, color = 'chocolate', alpha = 0.45)
+    ax[1].plot(t, medium[3],  linewidth = 3, color = 'chocolate', alpha = 0.75)
+    ax[1].plot(t, high[3], label = 'NAc', linewidth = 3, color = 'chocolate', alpha = 1)
+    ax[2].plot(t, fail[6], linewidth = 3, color = 'black', alpha = 0.25)
+    ax[2].plot(t, low[6],  linewidth = 3, color = 'black', alpha = 0.45)
+    ax[2].plot(t, medium[6],  linewidth = 3, color = 'black', alpha = 0.75)
+    ax[2].plot(t, high[6], label = 'Alcohol', linewidth = 3, color = 'black', alpha = 1)
+
+    
+    ax[0].set_ylim(-0.1,1.1)
+
+    ax[1].set_ylim(-0.1,1.1)
+    
+    ax[2].set_ylim(-0.1, 27)
+
+    ax[2].set_xlabel('Time (mins)', fontsize = 12)
+    ax[0].set_ylabel('Firing Rate (Hz)', fontsize =12) 
+    ax[1].set_ylabel('Firing Rate (Hz)', fontsize =12) 
+    ax[2].set_ylabel('Volume', fontsize =12) 
+    ax[0].legend()        
+    ax[1].legend()
+    ax[2].legend( loc = 'upper right')
+
+    plt.subplots_adjust(wspace=0, hspace=0.0)
+    plt.show()
+
+    # param_array = np.linspace(0, 2.5, 100)
+    # final_alcohol = []
+    # peak_vta = []
+    # peak_nac = []
 
     # for n in np.arange(len(param_array)):
     #      y= xppaut_model(t, y0, param_array[n])['Int']
@@ -457,7 +507,9 @@ def DA_graphs(F, S, M, L, save = False):
 
     if save == True:
         fig.savefig('/Users/amyrude/Downloads/DA_FL.png',transparent=True, dpi = 350)
-        # f.savefig('/Users/amyrude/Downloads/DA_NAc.png', transparent=True, dpi=350)
+        f.savefig('/Users/amyrude/Downloads/total_plot.png', transparent=True, dpi=350)
+
+# DA_graphs(1.35, 1.5, 1.65, 2, save=True)
 
 
 
@@ -521,21 +573,301 @@ def td_vect_ani(t,y0, save = False):
     plt.show()  
 
 
+def da_animation(param, save=False):
+    fig, ax = plt.subplots(3,1, figsize = (7,7))
+
+    def update(z):
+        for k in range(3):
+            ax[k].clear()
+            ax[k].set_xlim(0,60)
+            ax[k].tick_params(axis="x", labelsize=9) 
+            ax[k].tick_params(axis="y", labelsize=9) 
+
+        ax[0].get_xaxis().set_visible(False)
+        ax[1].get_xaxis().set_visible(False)
+
+        y = xppaut_model(t,y0,csTOvta = param[z], noise=False)['Int']        
+        ax[0].plot(t, y[5],  linewidth = 3, color = 'indigo', alpha = 1)
+        ax[1].plot(t, y[3],  linewidth = 3, color = 'chocolate', alpha = 1)
+        ax[2].plot(t, y[6],  linewidth = 3, color = 'black', alpha = 1)
+        
+        ax[0].set_ylim(-0.1,1.1)
+
+        ax[1].set_ylim(-0.1,1.1)
+        
+        ax[2].set_ylim(-0.1,27)
+
+        ax[2].set_xlabel('Time (mins)', fontsize = 12)
+        ax[0].set_ylabel('Firing Rate (Hz)', fontsize =12) 
+        ax[1].set_ylabel('Firing Rate (Hz)', fontsize =12) 
+        ax[2].set_ylabel('Volume', fontsize =12) 
+        ax[0].legend(['VTA'])        
+        ax[1].legend(['NAc'])
+        ax[2].legend(['Alcohol'], loc = 'upper right')
+
+
+        plt.subplots_adjust(wspace=0, hspace=0.0)
+
+
+        return ax
+    ani = animation.FuncAnimation(fig, update, frames=len(param), interval=10,repeat=False)
+    if save ==True:
+        writer = PillowWriter(fps=30)
+        ani.save('/Users/amyrude/Downloads/DAmodulateNAc.gif', writer=writer)
+    plt.show()  
+
+   
+param_array = np.linspace(1,4,1000)
+# da_animation(param_array, save=True)
+
 
 
     
 # td_vect_ani(t,y0)    
 # td_vect(t,y0)
-# DA_graphs(1.35, 1.5, 1.65, 2, save=True)
 # ind_plots('Cortex', save=True) #graph: PFC, Insula, STR, VTA, Alc, Param
 
 
 
-#ignore
+# #ignore
 # import seaborn as sbn
 # test = np.array([[1,1,2],[2,2,4]])
-# sbn.heatmap(test, cmap = 'Greys')
+# fig = plt.figure()
+# # sbn.heatmap(test, cmap = 'Greys')
+# plt.plot([0,3,4],[5,6,7])
+# plt.xlabel('Low DA    High DA', fontsize = 15)
 # plt.show()
-# plt.plot(0,5)
-# plt.xlabel('Low DA    High DA', fontsize = 20)
-# plt.show()
+# fig.savefig('/Users/amyrude/Downloads/heatmap.png', transparent=False, dpi=350)
+
+def ind_plots_new(csTOvta=csTOvta, t=t, save=False):
+    #graph: PFC, Insula, STR, VTA, Alc, Param
+    y = xppaut_model(t, y0, noise=True)['Int']
+# PFC !!!!!!!!
+    f, ax = plt.subplots(1, 2, figsize = (7,5), sharey=True, facecolor='w', gridspec_kw={'width_ratios': [10, 1]})
+    for z in range(2):
+        ax[z].plot(t,y[0], label="Setpoint", color = 'royalblue', linewidth = 4)
+        ax[z].plot(t, y[1], label="Seek", color = 'midnightblue', linewidth = 4)
+        ax[z].plot(t, (y[0]+y[1])/2, '--', label="mPFC Average", color = 'lightblue', linewidth = 4)
+        f.suptitle('mPFC Activity', fontsize = 17, fontweight = 'bold')
+    ax[0].set_xlim(0, 35)
+    ax[1].set_xlim(115, 120)
+    ax[0].spines['right'].set_visible(False)
+    ax[1].spines['left'].set_visible(False)
+    ax[1].tick_params(left = False) 
+    
+    for k in range(2):
+        ax[k].set_ylim(0,1.1)
+        ax[k].fill_between(t, 30, y2 = -1, where=[(t >= 0) and (t <= 3) for t in t], color = 'red', alpha = 0.15, linewidth = 0.05, label = 'CS') 
+        ax[k].tick_params(axis="x", labelsize=12) 
+        ax[k].tick_params(axis="y", labelsize=12) 
+    d = .015  
+    kwargs = dict(transform=ax[0].transAxes, color='k', clip_on=False)
+    ax[0].plot((1-d, 1+d), (-d, +d), **kwargs)
+    ax[0].plot((1-d, 1+d), (1-d, 1+d), **kwargs)
+    kwargs.update(transform=ax[1].transAxes)  # switch to the bottom axes
+    ax[1].plot((-d-0.3, +d), (1-d, 1+d), **kwargs)
+    ax[1].plot((-d-0.3, +d), (-d, +d), **kwargs)
+    ax[0].set_xlabel('Time (mins)', fontsize = 15, labelpad = 1)
+    ax[0].set_ylabel('Firing Rate (Hz)', labelpad = 10, fontsize = 15)
+    ax[0].xaxis.set_label_coords(0.6, -0.09)
+    ax[1].legend(fontsize = 15) 
+    if save == True:
+        f.savefig('/Users/amyrude/Downloads/graph_pfc_new.png',transparent=True, dpi = 350)
+    
+# INSULA!!!!
+    f, ax = plt.subplots(1, 2, figsize = (7,5), sharey=True, facecolor='w', gridspec_kw={'width_ratios': [10, 1]})
+    for z in range(2):
+        ax[z].plot(t, y[2], label="Binge", color = 'darkgreen', linewidth = 4)
+
+        f.suptitle('Insular Activity', fontsize = 17, fontweight = 'bold')
+    ax[0].set_xlim(0, 35)
+    ax[1].set_xlim(115, 120)
+    ax[0].spines['right'].set_visible(False)
+    ax[1].spines['left'].set_visible(False)
+    ax[1].tick_params(left = False) 
+    
+    for k in range(2):
+        ax[k].set_ylim(0,1.1)
+        ax[k].fill_between(t, 30, y2 = -1, where=[(t >= 0) and (t <= 3) for t in t], color = 'red', alpha = 0.15, linewidth = 0.05, label = 'CS') 
+        ax[k].tick_params(axis="x", labelsize=12) 
+        ax[k].tick_params(axis="y", labelsize=12) 
+    d = .015  
+    kwargs = dict(transform=ax[0].transAxes, color='k', clip_on=False)
+    ax[0].plot((1-d, 1+d), (-d, +d), **kwargs)
+    ax[0].plot((1-d, 1+d), (1-d, 1+d), **kwargs)
+    kwargs.update(transform=ax[1].transAxes)  # switch to the bottom axes
+    ax[1].plot((-d-0.3, +d), (1-d, 1+d), **kwargs)
+    ax[1].plot((-d-0.3, +d), (-d, +d), **kwargs)
+    ax[0].set_xlabel('Time (mins)', fontsize = 15, labelpad = 1)
+    ax[0].set_ylabel('Firing Rate (Hz)', labelpad = 10, fontsize = 15)
+    ax[0].xaxis.set_label_coords(0.6, -0.09)
+    ax[1].legend(fontsize = 15) 
+
+    if save == True:
+        f.savefig('/Users/amyrude/Downloads/graph_insula_new.png',transparent=True, dpi = 350)
+# NAc/ DLS
+    f, ax = plt.subplots(1, 2, figsize = (7,5), sharey=True, facecolor='w', gridspec_kw={'width_ratios': [10, 1]})
+    for z in range(2):
+        ax[z].plot(t, y[3], label="NAc", color = 'chocolate', linewidth = 4)
+        ax[z].plot(t, y[4], label="DLS", color='darkorange', linewidth = 4)
+        ax[z].plot(t, y[3]+y[4], '--',label="Striatum", color='tan', linewidth = 4)
+
+        f.suptitle('Striatal Activity', fontsize = 17, fontweight = 'bold')
+    ax[0].set_xlim(0, 35)
+    ax[1].set_xlim(115, 120)
+    ax[0].spines['right'].set_visible(False)
+    ax[1].spines['left'].set_visible(False)
+    ax[1].tick_params(left = False) 
+    
+    for k in range(2):
+        ax[k].set_ylim(0,1.1)
+        ax[k].fill_between(t, 30, y2 = -1, where=[(t >= 0) and (t <= 3) for t in t], color = 'red', alpha = 0.15, linewidth = 0.05, label = 'CS') 
+        ax[k].tick_params(axis="x", labelsize=12) 
+        ax[k].tick_params(axis="y", labelsize=12) 
+    d = .015  
+    kwargs = dict(transform=ax[0].transAxes, color='k', clip_on=False)
+    ax[0].plot((1-d, 1+d), (-d, +d), **kwargs)
+    ax[0].plot((1-d, 1+d), (1-d, 1+d), **kwargs)
+    kwargs.update(transform=ax[1].transAxes)  # switch to the bottom axes
+    ax[1].plot((-d-0.3, +d), (1-d, 1+d), **kwargs)
+    ax[1].plot((-d-0.3, +d), (-d, +d), **kwargs)
+    ax[0].set_xlabel('Time (mins)', fontsize = 15, labelpad = 1)
+    ax[0].set_ylabel('Firing Rate (Hz)', labelpad = 10, fontsize = 15)
+    ax[0].xaxis.set_label_coords(0.6, -0.09)
+    ax[1].legend(fontsize = 15) 
+
+    if save == True:
+        f.savefig('/Users/amyrude/Downloads/graph_str_new.png',transparent=True, dpi = 350)
+    
+# VTA !!!!
+    f, ax = plt.subplots(1, 2, figsize = (7,5), sharey=True, facecolor='w', gridspec_kw={'width_ratios': [10, 1]})
+    for z in range(2):
+        ax[z].plot(t, y[5], label="VTA", color = 'indigo', linewidth = 4)
+        f.suptitle('VTA Activity', fontsize = 17, fontweight = 'bold')
+
+    ax[0].set_xlim(0, 35)
+    ax[1].set_xlim(115, 120)
+    ax[0].spines['right'].set_visible(False)
+    ax[1].spines['left'].set_visible(False)
+    ax[1].tick_params(left = False) 
+    
+    for k in range(2):
+        ax[k].set_ylim(0,1.1)
+        ax[k].fill_between(t, 30, y2 = -1, where=[(t >= 0) and (t <= 3) for t in t], color = 'red', alpha = 0.15, linewidth = 0.05, label = 'CS') 
+        ax[k].tick_params(axis="x", labelsize=12) 
+        ax[k].tick_params(axis="y", labelsize=12) 
+    d = .015  
+    kwargs = dict(transform=ax[0].transAxes, color='k', clip_on=False)
+    ax[0].plot((1-d, 1+d), (-d, +d), **kwargs)
+    ax[0].plot((1-d, 1+d), (1-d, 1+d), **kwargs)
+    kwargs.update(transform=ax[1].transAxes)  # switch to the bottom axes
+    ax[1].plot((-d-0.3, +d), (1-d, 1+d), **kwargs)
+    ax[1].plot((-d-0.3, +d), (-d, +d), **kwargs)
+    ax[0].set_xlabel('Time (mins)', fontsize = 15, labelpad = 1)
+    ax[0].set_ylabel('Firing Rate (Hz)', labelpad = 10, fontsize = 15)
+    ax[0].xaxis.set_label_coords(0.6, -0.09)
+    ax[1].legend(fontsize = 15) 
+
+    if save == True:
+        f.savefig('/Users/amyrude/Downloads/graph_vta_new.png',transparent=True, dpi = 350)
+# Alcohol !!!!
+    f = plt.figure(figsize =(10,7)) #figsize = (14,6)
+    plt.plot(t, y[6],  color = 'black', linewidth = 4)
+    plt.xlabel('Time (mins)', fontsize = 20)
+    plt.ylabel('Volume', fontsize = 20)
+    # plt.title('Alcohol Consumption', fontsize = 15, fontweight = 'bold')
+    plt.fill_between(t, 30, where=[(t >= 0) and (t <= 20.1) for t in t], color = 'grey', alpha = 0.75, linewidth = 0.05, label = 'Front-Loading') 
+    plt.fill_between(t, 30, where=[(t >= 19.9) and (t <= 120) for t in t], color = 'grey', alpha = 0.25, linewidth = 0.05, label = 'Maintenence') 
+    plt.xlim(0,120)
+    leg = plt.legend(framealpha = 1, fontsize = 20)
+    plt.xticks(fontsize=14) 
+    plt.yticks(fontsize=14) 
+
+    if save == True:
+        f.savefig('/Users/amyrude/Downloads/graph_alc_new.png',transparent=True, dpi = 350)
+
+
+    plt.show()
+
+    
+        
+# ind_plots_new(save = True) #graph: PFC, Insula, STR, VTA, Alc, Param
+
+
+# NULL CLINE ANIMATION
+
+y0 = [0.1, 0, 0.1, 0.1, 0, 0, 0, EnacMEAN, driveMEAN]
+ytraj = [0.1, 0, 0.1, 0.1, 0, 0, 0, EnacMEAN, driveMEAN]
+t= np.linspace(0,50, 1000)
+def vector_field(y0, y_traj, t, save=False): 
+    #arguments: initial conditions, t, n/m=neuron population numbers (same as IC), name = ['pop one', 'pop two'], save =='yes' if you want to save]
+    x1min, x1max, numptsx1, x2min, x2max, numptsx2 = -0.1, 1, 12, -0.1, 1, 12 #setting up the grid space
+    x1array, x2array = np.meshgrid(np.linspace(x1min, x1max, numptsx1), np.linspace(x2min, x2max, numptsx2))
+    dx1dt_array = np.zeros(x1array.shape)
+    dx2dt_array = np.zeros(x1array.shape)
+    fig = plt.figure(figsize=(12, 10))
+    ax1 = fig.add_subplot(2, 1, 1)     
+    ax2 = fig.add_subplot(2, 2, 3)      
+    ax3 = fig.add_subplot(2, 2, 4)      
+    ax = [ax1, ax2, ax3]
+    init = xppaut_model(t, y0)['Int'] # Solving the system with IC
+    
+    def update(z):
+        #Plotting the Vector Fields
+        ax1.clear()
+        for i in np.arange(len(x1array)):
+            for j in np.arange(len(x2array)):
+                y = [init[0, z], init[1, z], init[2, z], init[3, z], init[4,z], init[5, z], init[6, z], init[7, z], init[8,z]]
+                y[1] = x1array[i, j]
+                y[2] = x2array[i, j]
+                deriv = der_model(t[z],y)
+                dx1dt_array[i,j] = deriv[1]
+                dx2dt_array[i,j] =  deriv[2]
+        ax1.quiver(x1array, x2array, dx1dt_array, dx2dt_array, alpha=0.25, width = 0.0025)    
+        
+        ax1.plot(init[1, 0:z], init[2, 0:z], color='black', linewidth = 2)
+        ax1.plot(init[1,z],init[2,z],marker='o', color = 'red', markersize='10', zorder=10)
+
+        x1list_fine = np.linspace(x1min, x1max, 250)
+        x2list_fine = np.linspace(x2min, x2max, 250)
+        nullcline = np.zeros((2, 250)) 
+        for i in np.arange(250):
+            for k in np.arange(9):
+                y0[k] = init[k,z]
+            y0[1] = x1list_fine[i]
+            y0[2] = x2list_fine[i]
+        #     #Solving for the nullclines at each time step
+            CS = np.heaviside(csDUR-t,0.5)[z] #Conditioned Stimulus
+            nullcline[0,i] = F(Eseek * (-spTOseek * y0[0] + csTOseek * CS + binTOseek * y0[2] + seekDRIVE))
+            nullcline[1,i] = F(Ebinge * (seekTObin * y0[1] + bingeDRIVE))   
+            
+        ax1.plot(x1list_fine, nullcline[1, :], 'b-', alpha=0.8, linewidth=1.5)
+        ax1.plot(nullcline[0, :], x2list_fine, 'r-', alpha=0.8, linewidth=1.5)
+        ax1.set_xlabel('Seek', fontweight='bold', fontsize=15, **tfont)
+        ax1.set_ylabel('Binge', fontweight='bold', fontsize=15, **tfont)
+        ax1.set_title('Phase Plane Analysis of Seek and Binge', **tfont, fontweight = 'bold', fontsize = '15')
+
+        ax2.plot(t[0:z],init[1,0:z], color = 'red', linewidth = 2)
+        ax2.plot(t[0:z],init[2,0:z], color = 'blue', linewidth = 2)
+        ax2.set_xlabel('Time', fontweight='bold', fontsize=15, **tfont)
+        ax2.set_ylabel('Firing Rate (Hz)', fontweight='bold', fontsize=15, **tfont)
+        ax2.set_xlim(0,t[-1])
+        ax2.set_ylim(0,1.05)        
+        # ax2.set_title('Seek and Binge Activity', **tfont, fontweight = 'bold', fontsize = '15')
+        ax2.legend(['Seek', 'Binge'])
+    
+        ax3.plot(t[0:z],init[0,0:z], color = 'darkgreen', label = 'Setpoint', linewidth = 2)
+        ax3.set_xlim(0,t[-1])
+        ax3.set_ylim(0.09,0.15)
+        ax3.set_xlabel('Time', fontweight='bold', fontsize=15, **tfont)
+        ax3.set_ylabel('Firing Rate (Hz)', fontweight='bold', fontsize=15, **tfont)
+        ax3.set_title('Setpoint Activity', **tfont, fontweight = 'bold', fontsize = '15')
+        return ax
+    
+    ani = animation.FuncAnimation(fig, update, frames=len(t), interval=30,repeat=False)
+    if save==True:
+        writer = PillowWriter(fps=50)
+        ani.save('/Users/amyrude/Downloads/seek_binge_nullani_new.gif', writer=writer)
+    plt.show()
+
+vector_field(y0,ytraj,t, save=True)
