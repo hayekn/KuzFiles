@@ -51,7 +51,7 @@ dlsSCALE = 0.1
 y0 = [0.1, 0, 0.1, 0.1, 0, 0, 0, EnacMEAN, driveMEAN]
 ytraj = [0.1, 0, 0.1, 0.1, 0, 0, 0, EnacMEAN, driveMEAN]
 
-t = np.linspace(0,1200,500)
+t = np.linspace(0,120,500)
 #setp, seek, binge, nac, dls, vta, ALCOHOL, Enac, nacDRIVE
 
 def F(x): # + = excitatory, - = inhibitory
@@ -111,6 +111,8 @@ def xppaut_model(t,y0, noise = False, csTOvta=csTOvta, seekTObin=seekTObin, binT
     y[4] = dlsSCALE*y[4]
     cs = np.heaviside(csDUR-t, .5)
     return {'Int':y, 'Der':[model(t,y0) for t in t], 'CS':cs}
+
+
 def der_model(t, y, seekTObin=seekTObin, binTOseek=binTOseek):
     setp, seek, binge, nac, dls, vta, ALCOHOL, Enac, nacDRIVE = y
     cs = np.heaviside(csDUR-t, .5)
@@ -258,13 +260,10 @@ def td_vect(t,y0):
     return ax
 
 
-
+y = xppaut_model(t, y0, noise=True)['Int']
 def ind_plots(graph, csTOvta=csTOvta, t=t, save=True):
     #graph: PFC, Insula, STR, VTA, Alc, Param
-    y = xppaut_model(t, y0, noise=True)['Int']
     f, ax = plt.subplots(1, 2, figsize = (7,7), sharey=True, facecolor='w', gridspec_kw={'width_ratios': [10, 1]})
-
-    print(max(y[5]))
 
     if graph == 'PFC':
 
@@ -320,7 +319,7 @@ def ind_plots(graph, csTOvta=csTOvta, t=t, save=True):
      
 
         if save == True:
-            f.savefig('/Users/amyrude/Downloads/graph_'+graph+'.png',transparent=True, dpi = 350)
+            f.savefig('/Users/amyrude/Downloads/graph_'+graph+'_updated.png',transparent=True, dpi = 350)
     if graph == "Param":
         f = plt.figure()
         plt.plot(t, y[7], label="$E_{N}$", linewidth = 3, color = 'red')[0]
@@ -336,7 +335,7 @@ def ind_plots(graph, csTOvta=csTOvta, t=t, save=True):
         plt.xticks(fontsize = 12)
 
         if save == True:
-            f.savefig('/Users/amyrude/Downloads/graph_'+graph+'_new.png',transparent=True, dpi = 350)
+            f.savefig('/Users/amyrude/Downloads/graph_'+graph+'_updated.png',transparent=True, dpi = 350)
 
     if graph == 'PFC' or 'Insula' or 'STR' or 'VTA' or 'Cortex' or 'Subcort':
         ax[0].set_xlim(0, 35)
@@ -349,7 +348,7 @@ def ind_plots(graph, csTOvta=csTOvta, t=t, save=True):
         if graph =='STR' or 'Subcort':
             ax[0].set_ylim(0,1.15)
             ax[1].set_ylim(0,1.15)
-        else:
+        if graph == 'Cortex':
             ax[0].set_ylim(-0.1,1)
             ax[1].set_ylim(-0.1,1)
         ax[0].fill_between(t, 30, y2 = -1, where=[(t >= 0) and (t <= 3) for t in t], color = 'red', alpha = 0.15, linewidth = 0.05, label = 'CS') 
@@ -368,16 +367,18 @@ def ind_plots(graph, csTOvta=csTOvta, t=t, save=True):
         ax[0].tick_params(axis="y", labelsize=14) 
         ax[1].tick_params(axis="y", labelsize=14) 
         ax[0].xaxis.set_label_coords(0.6, -0.09)
-        ax[1].legend(fontsize = 20)
+        ax[1].legend(framealpha = 1, fontsize = 20)
         
 
         if save == True:
-            f.savefig('/Users/amyrude/Downloads/graph_'+graph+'.png',transparent=True, dpi = 350)
+            f.savefig('/Users/amyrude/Downloads/graph_'+graph+'_update.png',transparent=True, dpi = 350)
         
 
         plt.show()
 
-# ind_plots('Param', save=True) #graph: PFC, Insula, STR, VTA, Alc, Param
+# ind_plots('Cortex', save=True) #graph: PFC, Insula, STR, VTA, Alc, Param
+# ind_plots('Subcort', save=True) #graph: PFC, Insula, STR, VTA, Alc, Param
+# ind_plots('Alc', save=True) #graph: PFC, Insula, STR, VTA, Alc, Param
 
 
 def DA_graphs(F, S, M, L, save = False):
@@ -870,4 +871,4 @@ def vector_field(y0, y_traj, t, save=False):
         ani.save('/Users/amyrude/Downloads/seek_binge_nullani_new.gif', writer=writer)
     plt.show()
 
-vector_field(y0,ytraj,t, save=True)
+# vector_field(y0,ytraj,t, save=True)
