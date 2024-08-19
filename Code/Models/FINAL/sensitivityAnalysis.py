@@ -103,7 +103,7 @@ def recover():
     return arrays
 
 def loadData(names, graph, confidence=False, range=1):
-    with open("Code/Models/FINAL/bigDATA.npy", "rb") as f:
+    with open("bigDATA.npy", "rb") as f:
         A = np.load(f)
 
     fig, ax = plt.subplots(figsize=(10, 5))
@@ -154,7 +154,11 @@ SYN = ['spTOseek', 'seekTOnac', 'seekTObin', 'binTOseek', 'binTOnac', 'vtaTOnac'
 MISC = ['csDUR', 'EnacDECAY', 'nacDriveDECAY', 'EnacTAU', 'nacDriveTAU', 'EnacMEAN', 'driveMEAN', 'dlsSCALE']
 
 
+#TO SEE GRAPHS
+#loadData(ArrayLike parameterToSee, String 'S1' or 'ST', Boolean showConfidenceIntervals=False, Float yAxisLimit)
+#e.g. 
+loadData(['seekTAU', 'bingeTAU'], 'S1', confidence=False, range=.1)
 
-
-loadData(TAU, 'S1', confidence=True)
-chooseBest(30, 'ST', 'TO')
+#TO SEARCH FOR MOST/LEAST SENSITIVE PARAMETERS
+#chooseBest(int numberOfParams, String 'S1' or 'ST', String whatToSearch)
+#e.g. chooseBest(30, 'ST', 'vta')
