@@ -127,7 +127,7 @@ def loadData(names, graph, confidence=False, range=1):
     plt.show()
 
 def chooseBest(n, graph, lookFor):
-    with open("Sensitivity/bigDATAv2.npy", "rb") as f:
+    with open("Code/Models/FINAL/bigDATA.npy", "rb") as f:
         A = np.load(f)
     result = {}
     for name in varNames:
@@ -147,12 +147,14 @@ def chooseBest(n, graph, lookFor):
                 return
 
 reso = 200
-'''runAnalysis()
-recover()'''
 
 E = ['Ebinge', 'Esetp', 'Eseek', 'Evta', 'Edls']
 TAU = ['seekTAU', 'bingeTAU', 'nacTAU', 'setpTAU', 'vtaTAU', 'dlsTAU']
 SYN = ['spTOseek', 'seekTOnac', 'seekTObin', 'binTOseek', 'binTOnac', 'vtaTOnac', 'csTOseek', 'csTOvta', 'csTOdls', 'nacTOsetp', 'dlsTOdls']
 MISC = ['csDUR', 'EnacDECAY', 'nacDriveDECAY', 'EnacTAU', 'nacDriveTAU', 'EnacMEAN', 'driveMEAN', 'dlsSCALE']
-#loadData(TAU, 'S1', confidence=True)
+
+
+
+
+loadData(TAU, 'S1', confidence=True)
 chooseBest(30, 'ST', 'TO')
